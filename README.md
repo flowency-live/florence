@@ -28,10 +28,11 @@ bndy-brain/
 ├── 01-strategy/     # Vision, positioning, AI-native model
 ├── 02-product/      # Personas, features, principles
 ├── 03-backlog/      # Now, next, later, risks
-├── 04-architecture/ # AWS stack, pipelines, data model
-├── 05-entities/     # Venue, artist, event, community-builder
+├── 04-architecture/ # AWS stack, pipelines, data model (v2)
+├── 05-entities/     # Venue, artist, event, community-builder (v2)
 ├── 06-decisions/    # ADRs - architecture decision records
-└── 07-prompts/      # AI tool rules and system prompts
+├── 07-prompts/      # AI tool rules and system prompts
+└── 08-v1-platform/  # Existing platform docs (for migration)
 ```
 
 ## Navigation

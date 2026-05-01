@@ -44,3 +44,14 @@ The central navigation hub for the bndy knowledge base.
 - [[07-prompts/claude-code-rules|Claude Code Rules]]
 - [[07-prompts/cursor-rules|Cursor Rules]]
 - [[07-prompts/chatgpt-product-review|ChatGPT Product Review]]
+
+## v1 Platform (Existing)
+
+The current production platform - context for v2 development.
+
+- [[08-v1-platform/overview|Platform Overview]] - What v1 is, current status
+- [[08-v1-platform/architecture|Architecture]] - AWS, Lambda, DynamoDB
+- [[08-v1-platform/data-models|Data Models]] - TypeScript interfaces
+- [[08-v1-platform/api-routes|API Routes]] - All 125 endpoints
+- [[08-v1-platform/technical-debt|Technical Debt]] - Known issues
+- [[08-v1-platform/migration-notes|Migration Notes]] - v1 → v2 planning
