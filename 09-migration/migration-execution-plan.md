@@ -8,9 +8,9 @@ Real-world migration from v1 DynamoDB to canonical v2 model.
 
 | Table | Items | PK | SK | Purpose |
 |-------|-------|----|----|---------|
-| `bndy-artists` | 275 | `id` | — | Artist/band profiles |
-| `bndy-venues` | 284 | `id` | — | Venue locations |
-| `bndy-events` | 8 | `id` | — | Events (low count = beta) |
+| `bndy-venues` | **611** | `id` | — | Venue locations |
+| `bndy-artists` | **597** | `id` | — | Artist/band profiles |
+| `bndy-events` | **1,041** | `id` | — | Events |
 
 ### Supporting Tables
 
@@ -547,11 +547,11 @@ function calculateArtistConfidence(artist: V1Artist): number {
 
 | Metric | Target |
 |--------|--------|
-| Venues migrated | 284/284 (100%) |
-| Artists migrated | 275/275 (100%) |
-| Events migrated | 8/8 (100%) |
+| Venues migrated | 611/611 (100%) |
+| Artists migrated | 597/597 (100%) |
+| Events migrated | 1,041/1,041 (100%) |
 | Duplicate pairs resolved | All detected |
-| Relationships created | ≥ event count |
+| Relationships created | ≥ 1,041 (from events) |
 | Confidence scores assigned | 100% |
 | Legacy IDs preserved | 100% |
 | Query parity | 100% same results |
@@ -564,9 +564,9 @@ function calculateArtistConfidence(artist: V1Artist): number {
 | Week | Phase | Deliverable |
 |------|-------|-------------|
 | 1 | Preparation | v2 tables created, Lambda deployed |
-| 1-2 | Venues | 284 venues migrated |
-| 2 | Artists | 275 artists migrated |
-| 2-3 | Events | 8 events migrated |
+| 1-2 | Venues | 611 venues migrated |
+| 2 | Artists | 597 artists migrated |
+| 2-3 | Events | 1,041 events migrated |
 | 3 | Relationships | Graph populated |
 | 3-4 | Parallel run | Comparison passing |
 | 4 | Cutover | v2 primary, v1 read-only |

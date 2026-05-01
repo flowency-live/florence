@@ -30,13 +30,14 @@ Multi-sided platform connecting the UK grassroots music ecosystem:
 
 | Metric | Value |
 |--------|-------|
-| Artists | 275 |
-| Venues | 284 |
-| Events | 8 |
+| Venues | **611** |
+| Artists | **597** |
+| Events | **1,041** |
 | Lambda Functions | 16 |
 | API Routes | 125 |
 | DynamoDB Tables | 19 |
-| Documentation Files | 118 |
+
+*Counts as of 01/05/2026 from DynamoDB*
 
 ## Three Frontend Applications
 
