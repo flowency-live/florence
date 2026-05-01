@@ -69,3 +69,16 @@ The architectural hinge point - transforming v1 data into canonical v2 entities.
 - [[09-migration/migration-execution-plan|Execution Plan]] - Real DynamoDB migration
 - [[09-migration/canonical-id-strategy|Canonical ID Strategy]] - ID generation rules
 - [[09-migration/v1-source-record-strategy|Source Record Strategy]] - Provenance for v1 data
+
+## Brain (AI-Native Knowledge Model)
+
+The agentic knowledge system - how bndy interprets evidence, generates claims, and learns.
+
+**Evidence in. Knowledge out.**
+
+- [[10-brain/bndy-brain-concept|Brain Concept]] - The core shift from pipelines to agents
+- [[10-brain/signal-to-claim-model|Signal to Claim]] - How evidence becomes claims
+- [[10-brain/claim-evidence-graph|Claim-Evidence Graph]] - How claims link to evidence
+- [[10-brain/agentic-intake-loop|Agentic Intake Loop]] - The agent's reasoning cycle
+- [[10-brain/memory-and-reasoning-model|Memory and Reasoning]] - How bndy remembers
+- [[10-brain/human-challenge-loop|Human Challenge Loop]] - How humans correct the brain

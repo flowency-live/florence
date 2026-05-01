@@ -29,11 +29,12 @@ bndy-brain/
 ├── 02-product/      # Personas, features, principles
 ├── 03-backlog/      # Now, next, later, risks
 ├── 04-architecture/ # AWS stack, pipelines, data model (v2)
-├── 05-entities/     # Venue, artist, event, source, relationship (v2)
+├── 05-entities/     # Venue, artist, event, source, signal (v2)
 ├── 06-decisions/    # ADRs - architecture decision records
 ├── 07-prompts/      # AI tool rules and system prompts
 ├── 08-v1-platform/  # Existing platform docs
-└── 09-migration/    # v1 → v2 migration execution
+├── 09-migration/    # v1 → v2 migration execution
+└── 10-brain/        # Agentic knowledge model - claims, evidence, reasoning
 ```
 
 ## Navigation
