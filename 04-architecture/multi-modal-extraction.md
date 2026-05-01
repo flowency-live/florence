@@ -1,10 +1,12 @@
-# Multi-Modal Extraction
+# Multi-Modal Extraction (Bedrock/Claude Implementation)
 
-How bndy reads posters, screenshots, and images like a human.
+Implementation details for using AWS Bedrock with Claude as the claim generator.
 
-## The Capability
+**This is one implementation option for the [[signal-reader|Signal Reader]] capability.**
 
-Claude's vision model can interpret:
+The Signal Reader architecture is model-agnostic. This document covers the Claude/Bedrock implementation specifically.
+
+## What Claude Vision Can Interpret
 
 - Gig posters (photographed or designed)
 - Screenshots of venue websites

@@ -53,14 +53,38 @@ Raw source capture into S3/DynamoDB.
 
 ---
 
-### Phase 2: Claim Generator
+### Phase 2: Signal Reader
 
-AI reads the signal and outputs **claims**, not fields.
+Render, extract, then generate claims. See [[../04-architecture/signal-reader|Signal Reader]] for full architecture.
+
+**For URL signals:**
+```
+URL signal
+→ Playwright render (headless browser)
+→ Extract: visible text + DOM + screenshot + image URLs
+→ Claim generation
+```
+
+**For image signals:**
+```
+Image signal
+→ Preprocess (resize, normalize)
+→ OCR + vision model
+→ Claim generation
+```
+
+**For text signals:**
+```
+Text signal
+→ Clean/normalize
+→ Claim generation
+```
 
 | Component | Purpose |
 |-----------|---------|
-| Lambda | Claim generation |
-| Bedrock (Claude) | Multi-modal interpretation |
+| Lambda | Signal reader orchestration |
+| Playwright | URL rendering |
+| Claim generator | Interpret content, output claims |
 | DynamoDB | Claim storage |
 
 **The prompt is not:**
@@ -82,7 +106,9 @@ I think this tells us:
 ```
 
 **Acceptance criteria:**
-- [ ] Signal triggers claim generation
+- [ ] URL signals rendered via Playwright
+- [ ] Image signals preprocessed + OCR
+- [ ] Text signals cleaned
 - [ ] Claims stored with signal reference
 - [ ] Uncertainties flagged
 - [ ] Status: `needs_review`
