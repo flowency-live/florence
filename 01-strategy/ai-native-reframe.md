@@ -1,57 +1,161 @@
 # AI-Native Reframe
 
-## What "AI-Native" Means for bndy
+## The Shift
 
-AI-native is not "we added ChatGPT to our app."
+**Legacy thinking:**
+```
+Users create records.
+```
 
-AI-native means the entire system is designed around the assumption that:
+**AI-native thinking:**
+```
+Signals continuously describe reality.
+```
 
-1. **AI can read everything** - All data is structured for machine consumption
-2. **AI can reason about context** - Relationships between entities matter
-3. **AI can take action** - Agents can ingest, classify, recommend, communicate
-4. **AI improves continuously** - Every interaction generates learning signal
+## The AI-Native Operating Model
 
-## Traditional vs AI-Native
+```
+Signals
+↓
+Extraction
+↓
+Entity Resolution
+↓
+Canonical Graph
+↓
+Trust and Provenance
+↓
+Relationship Intelligence
+↓
+Experience Layer
+```
 
-| Traditional App | AI-Native Platform |
-|-----------------|-------------------|
-| Users manually enter events | AI ingests events from 50+ sources |
-| Categories are static taxonomies | Genres emerge from artist analysis |
-| Recommendations = collaborative filtering | Recommendations = contextual reasoning |
-| Search = keyword matching | Search = natural language understanding |
-| Moderation = human review | Moderation = AI triage + human escalation |
+The map is just one surface on top of a deeper intelligence system.
 
-## Design Principles
+## The Core Product Reframe
 
-### 1. Structured data over free text
+**From:** "A map showing live music events."
 
-Every entity (venue, artist, event) has a canonical schema. Free text exists for humans; structured data exists for AI.
+**To:** "The canonical grassroots live music graph."
 
-### 2. Graph over tables
+Or commercially: "The intelligence layer for local live music."
 
-Relationships matter. "This artist played at this venue" is more valuable than two isolated records.
+## What the Graph Understands
 
-### 3. Confidence scores over binary truth
+- Artists and musicians
+- Venues and promoters
+- Events and recurring nights
+- Scenes and genres
+- Audience clusters
+- Venue preferences
+- Musician relationships
+- Promoter networks
+- Local momentum
+- Trust and verification
 
-Is this the same venue? Maybe 85% confidence. Let AI act on probability, escalate uncertainty.
+## Multi-Modal Ingestion Strategy
 
-### 4. Agents over features
+### Structured Sources
+- Venue websites with schema.org/Event
+- Ticketing platforms (Bandsintown, Eventbrite, Skiddle, Ents24)
+- Public APIs and partner feeds
 
-Instead of building a "duplicate detection feature", build a "venue identity agent" that continuously resolves duplicates.
+### Semi-Structured Sources
+- Public web pages and venue gig pages
+- Local event calendars
+- Council/community listings
+- Music blogs and newsletters
 
-### 5. Context windows over databases
+### Unstructured Sources
+- Posters and flyers
+- Instagram/Facebook images
+- TikTok captions, YouTube descriptions
+- Screenshots, PDFs
+- WhatsApp submissions, email forwards
 
-Design for AI that can hold entire conversations in memory. Don't force users through modal dialogs - let them talk.
+### Human Signals
+- Band/venue/promoter confirmation
+- Audience attendance confirmation
+- Trusted contributor corrections
+- Area captain moderation
+- Duplicate and cancellation reports
 
-## Implementation Implications
+## AI-Native Event Discovery Flow
 
-- **Data model**: Entity-relationship graph with confidence scores
-- **Ingestion**: Multi-source pipeline with AI classification
-- **API design**: Rich context in responses, not just IDs
-- **Frontend**: Conversational interfaces alongside traditional UI
-- **Ops**: Agents running continuously, not just request-response
+```
+Signal detected or submitted
+↓
+AI extracts probable event data
+↓
+AI identifies candidate venue, artist, promoter and date
+↓
+Entity resolution checks against canonical graph
+↓
+Confidence score is generated
+↓
+Human/community verifies or corrects
+↓
+Canonical event is created or updated
+↓
+Graph relationships are enriched
+```
+
+Humans shift from data entry to verification, correction and enrichment.
+
+## Community Verification and Reputation
+
+Reputation systems for:
+- Trusted venues and promoters
+- Trusted musicians and contributors
+- Local area captains
+- Verified scene maintainers
+
+Reputation earned through:
+- Accurate submissions
+- Duplicate resolution
+- Confirmed corrections
+- Timely cancellation updates
+- Useful metadata enrichment
+
+Start with a simple contribution quality score.
+
+## The Relationship Graph: The Real Asset
+
+The long-term defensible asset is not the event table. It is the relationship graph.
+
+### Node Types
+- Artist, Musician, Venue, Event, Promoter
+- Genre, Local Scene, City, Area
+- Audience Cluster, Recurring Night, Festival
+- Equipment Seller, Studio, Booking Agent
+
+### Relationship Types
+- artist plays event
+- event hosted at venue
+- musician member of artist
+- artist similar to artist
+- artist shares members with artist
+- promoter books artist
+- promoter works with venue
+- venue associated with genre
+- venue hosts recurring night
+- artist has strong local draw in area
+
+## Future User Experiences
+
+Today users search maps. In an AI-native future, users will ask:
+
+- "Find me a proper indie gig near Stockport this Saturday."
+- "What's on within 20 minutes that feels like 90s Britpop?"
+- "Where could my band realistically get booked?"
+- "Which venues near me book acoustic duos?"
+- "Who are the active promoters for alternative rock around Manchester?"
+- "Find me support slots for a punk band."
+
+This requires a graph and semantic understanding, not just map pins.
 
 ## Related
 
 - [[bndy-strategy]]
 - [[04-architecture/data-model|Data Model]]
+- [[04-architecture/ingestion-pipeline|Ingestion Pipeline]]

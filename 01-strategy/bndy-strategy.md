@@ -1,57 +1,130 @@
 # bndy Strategy
 
-## The Problem
+## From Gig Map to Grassroots Music Intelligence Infrastructure
 
-Grassroots music is invisible. Small venues, emerging artists, and local scenes exist in fragmented silos - Facebook events, Instagram stories, word of mouth, posters on walls. There's no single place to discover what's happening in your local music scene.
+bndy should not try to win as another event listing platform.
 
-## The Opportunity
+If the product remains centred on users manually creating artists, venues and events that are stored in DynamoDB and displayed on a map, it is vulnerable. Google, Bandsintown, Songkick, Skiddle, Facebook, Eventim, Ents24, Data Thistle and others already operate at greater scale, and AI now makes basic event extraction and listing much easier to replicate.
 
-AI changes everything. We can now:
+**The strategic opportunity is not to build a better gig map.**
 
-- **Ingest** scattered event data from dozens of sources
-- **Understand** entities (venues, artists, events) and their relationships
-- **Surface** relevant discoveries to the right people at the right time
-- **Learn** from community signals to improve recommendations
+**The opportunity is to build the canonical intelligence layer for grassroots live music.**
 
-## Our Position
+## What bndy Must Understand
 
-bndy is the **AI-native grassroots music discovery platform**.
+bndy becomes the system that understands:
 
-We don't compete with Ticketmaster or Eventbrite (ticketing).
-We don't compete with Spotify or Apple Music (streaming).
-We don't compete with Facebook Events (social).
+- which venues are real, active and trusted
+- which artists are active, duplicated, renamed or connected
+- which events are verified, inferred, stale or uncertain
+- which promoters, musicians and venues form local scenes
+- which gigs matter culturally, not just which gigs exist
+- which signals are reliable, fresh and corroborated
+- which relationships create the real grassroots music graph
 
-We occupy the **discovery layer** - helping people find live music they didn't know existed.
+Google can increasingly infer that an event exists. bndy must understand why that event matters, who it connects, whether it is trustworthy, and how it fits into the local live music ecosystem.
 
-## Strategic Pillars
+## The Trigger: Google Is Already Here
 
-### 1. Data is the moat
+Google is surfacing grassroots events including:
 
-The more events, venues, and artists we know about, the harder we are to replicate. Invest heavily in ingestion infrastructure.
+- pub gigs and tribute bands
+- local venue events
+- events from Facebook, Bandsintown, Eventim, Ents24, Data Thistle, WeGotTickets, FIXR
+- events extracted from social media posters via multi-modal AI (OCR, image understanding, NLP, entity matching)
 
-### 2. Community builders are the network
+Google is not only ingesting structured ticketed events. It is extracting events from messy, informal, grassroots sources.
 
-Promoters, venue owners, scene connectors - these are our power users. Build for them first.
+## Why the Legacy Model Isn't Defensible
 
-### 3. AI-native from day one
+The current mental model:
 
-Don't bolt AI onto a traditional app. Design every feature assuming AI can read, reason, and act.
+```
+User creates artist / venue / event
+↓
+API validates data
+↓
+DynamoDB stores records
+↓
+Map displays events
+```
 
-### 4. Grassroots identity
+This is classic Web 2.0 CRUD. Not strategically defensible. AI makes this worse because the cost of creating event-directory products is collapsing.
 
-We serve the 200-cap venues, the unsigned artists, the DIY promoters. This is not a stepping stone to mainstream - it IS the product.
+## The Strategic Moat
 
-## Success Metrics
+The moat is not raw event data. Raw event data is increasingly commoditised.
 
-| Metric | Why It Matters |
-|--------|----------------|
-| Events ingested | Data coverage |
-| Venues with canonical identity | Data quality |
-| Community builders active | Network health |
-| Discoveries per user | Product value |
-| Events attended via bndy | Real-world impact |
+**The moat is:**
+
+- Canonical identity
+- Trust scoring
+- Provenance
+- Relationship intelligence
+- Community verification
+- Local scene understanding
+- Longitudinal graph history
+- Contribution reputation
+- High-quality deduplication
+- AI-assisted enrichment
+
+> bndy's moat is not knowing more events than Google. It is understanding grassroots music better than Google.
+
+## Google vs bndy
+
+| Google is strong at | bndy must own |
+|---------------------|---------------|
+| Search, maps, scale | Grassroots culture |
+| Entity matching | Musician relationships |
+| Broad ingestion | Support act networks |
+| User behaviour signals | Local promoter reputation |
+| Business profiles | Small scene nuance |
+| | Venue booking patterns |
+| | Which gigs are actually credible |
+
+Google can infer: *"An event exists."*
+
+bndy must understand: *"This is a credible grassroots event, at this kind of venue, involving these connected artists, serving this local audience, within this scene, with this level of confidence."*
+
+## Strategic Product Pillars
+
+| Pillar | Purpose |
+|--------|---------|
+| **Discover** | Public-facing map, feed, search |
+| **Verify** | Community and venue confirmation workflows |
+| **Resolve** | Canonical identity, deduplication, confidence scoring |
+| **Understand** | Graph intelligence, scenes, relationships, recommendations |
+| **Activate** | Bookings, promotion, dep finding, artist/venue matching |
+
+## Strategic Positioning
+
+**Avoid:**
+- another gig map
+- another event directory
+- another listing site
+
+**Position as:**
+- Grassroots music intelligence
+- Canonical live music graph
+- Trusted local music discovery
+- Infrastructure for live music communities
+
+**Positioning statement:**
+
+> bndy is building the trusted live graph for grassroots music, connecting venues, artists, promoters and audiences through verified events, local scene intelligence and community-powered discovery.
+
+## The Core Question
+
+The question is no longer: *"How do users add events?"*
+
+The better question is: **"How does bndy continuously understand the grassroots live music ecosystem better than anyone else?"**
+
+Google may know that a gig exists. bndy must know whether it is real, who is behind it, who it connects, why it matters, and how it fits into the local music scene.
+
+That is the AI-native opportunity. That is the defensible product.
 
 ## Related
 
-- [[ai-native-reframe]]
+- [[ai-native-reframe]] - The AI-native operating model
 - [[02-product/vision|Product Vision]]
+- [[03-backlog/now|Current Priorities]]

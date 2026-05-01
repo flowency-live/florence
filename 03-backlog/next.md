@@ -1,102 +1,254 @@
 # Next
 
-Upcoming work - ready to start when current sprint completes.
+Upcoming work organised by strategic phase.
 
 ---
 
-## BNDY-004: Create canonical artist model
+## Phase 2: AI-Assisted Event Intake
+
+Allow users to submit signals, not structured data. AI extracts, humans confirm.
+
+---
+
+### BNDY-007: Poster/image upload
 
 **Status:** Ready
 **Priority:** P1
-**Owner:** TBD
+**Phase:** 2
 
 ### Why
 
-Artists are the second key entity. Linking events to artists enables:
-- Artist pages
-- Artist-based recommendations
-- "Similar artists" discovery
+Users have posters, screenshots, flyers. Let them submit these instead of typing.
 
 ### Outcome
 
-Canonical artist identity that can be linked from events.
+Users can upload an image and bndy extracts event data.
 
 ### Acceptance Criteria
 
-- [ ] Artist has canonical ID
-- [ ] Artist can have aliases (stage names, band name variants)
-- [ ] Artist has genre associations
-- [ ] Artist can be linked to events (performed at)
-- [ ] Artist can have external links (Spotify, Bandcamp, etc.)
+- [ ] User can upload image (poster, flyer, screenshot)
+- [ ] Image stored in S3
+- [ ] SourceRecord created with rawImageS3Key
+- [ ] Triggers extraction pipeline
 
 ---
 
-## BNDY-005: Add genre/vibe tagging
+### BNDY-008: AI extraction into candidate format
 
 **Status:** Ready
 **Priority:** P1
-**Owner:** TBD
+**Phase:** 2
 
 ### Why
 
-Users want to filter by genre. AI can infer genre from artist data.
+This is the shift from CRUD to signal processing. AI does the heavy lifting.
 
 ### Outcome
 
-Events and artists have genre tags that users can filter by.
+AI extracts structured event data from text/images.
 
 ### Acceptance Criteria
 
-- [ ] Genre taxonomy defined
-- [ ] AI can auto-tag events based on artist
-- [ ] Users can filter feed by genre
-- [ ] Community can suggest/correct tags
+- [ ] OCR extracts text from images
+- [ ] LLM extracts: event name, venue, date, time, artists
+- [ ] LLM identifies candidate venue (match to canonical or suggest new)
+- [ ] LLM identifies candidate artists (match to canonical or suggest new)
+- [ ] Confidence scores assigned to each field
+- [ ] Candidate event JSON created
 
 ---
 
-## BNDY-006: Venue claim flow
+### BNDY-009: Human confirmation before publishing
 
-**Status:** Needs design
+**Status:** Ready
 **Priority:** P1
-**Owner:** TBD
+**Phase:** 2
 
 ### Why
 
-Community builders need to claim their venues to manage events and analytics.
+AI extracts, humans verify. This is how quality scales.
 
 ### Outcome
 
-Venue owners/managers can claim and verify ownership of venue profiles.
+Extracted events go through human confirmation before publishing.
+
+### Acceptance Criteria
+
+- [ ] Candidate events appear in review queue
+- [ ] Reviewer can confirm, edit, or reject
+- [ ] Confirmed events published with verificationStatus = 'community_verified'
+- [ ] Corrections feed back to improve extraction
+- [ ] Trusted contributors can skip queue
+
+---
+
+### BNDY-010: Venue claim flow
+
+**Status:** Ready
+**Priority:** P1
+**Phase:** 2
+
+### Why
+
+Community builders need to own their venues. Claimed venues have higher trust.
+
+### Outcome
+
+Venue owners can claim and verify their venue profiles.
 
 ### Acceptance Criteria
 
 - [ ] User can request to claim a venue
-- [ ] Verification flow (email domain, document, or manual review)
+- [ ] Verification options: email domain, document, manual review
 - [ ] Claimed venue shows "Verified" badge
 - [ ] Claimant can edit venue details
+- [ ] Claimant can submit events directly (skip queue)
 
 ---
 
-## BNDY-007: Event submission form
+### BNDY-011: Artist claim flow
 
-**Status:** Needs design
+**Status:** Ready
 **Priority:** P1
-**Owner:** TBD
+**Phase:** 2
 
 ### Why
 
-Not all events can be scraped. Community builders need to submit directly.
+Artists need to own their profiles. Claimed artists can confirm events.
 
 ### Outcome
 
-Verified venues/promoters can submit events to bndy.
+Artists/bands can claim and verify their profiles.
 
 ### Acceptance Criteria
 
-- [ ] Authenticated users can submit events
-- [ ] Events linked to verified venue
-- [ ] Events go live immediately (trusted submitters) or moderation queue
-- [ ] Duplicate detection warns before submission
+- [ ] User can request to claim an artist
+- [ ] Verification options: social link, document, manual review
+- [ ] Claimed artist shows "Verified" badge
+- [ ] Claimant can edit artist details
+- [ ] Claimant can confirm/deny events they're listed on
+
+---
+
+## Phase 3: Relationship Graph
+
+Start capturing relationships between entities.
+
+---
+
+### BNDY-012: Add relationship records
+
+**Status:** Needs design
+**Priority:** P2
+**Phase:** 3
+
+### Why
+
+The relationship graph is the real asset. This is what makes bndy smarter than Google.
+
+### Outcome
+
+System tracks relationships between entities.
+
+### Acceptance Criteria
+
+- [ ] Relationship entity created (see [[05-entities/relationship-model]])
+- [ ] artist_played_venue relationships auto-created from events
+- [ ] artist_played_event relationships auto-created
+- [ ] Relationships have confidence and strength scores
+- [ ] Relationships track firstSeen/lastSeen/occurrenceCount
+
+---
+
+### BNDY-013: Artist-to-venue history
+
+**Status:** Needs design
+**Priority:** P2
+**Phase:** 3
+
+### Why
+
+Knowing which artists play which venues enables booking recommendations.
+
+### Outcome
+
+System shows venue booking history for artists.
+
+### Acceptance Criteria
+
+- [ ] Artist profile shows venues played
+- [ ] Venue profile shows artists booked
+- [ ] Frequency and recency visible
+- [ ] "Artists like X who play here" query possible
+
+---
+
+### BNDY-014: Artist similarity
+
+**Status:** Needs design
+**Priority:** P2
+**Phase:** 3
+
+### Why
+
+Similarity enables "if you like X, you'll like Y" recommendations.
+
+### Outcome
+
+System computes artist similarity from shared venues and genres.
+
+### Acceptance Criteria
+
+- [ ] artist_similar_to relationships computed
+- [ ] Similarity based on: shared venues, genre overlap, audience overlap
+- [ ] "Similar artists" section on artist pages
+- [ ] API endpoint for similar artists
+
+---
+
+## Phase 4: Scene Intelligence
+
+Build higher-value features on top of the graph.
+
+---
+
+### BNDY-015: Venue recommendations for bands
+
+**Status:** Future
+**Priority:** P3
+**Phase:** 4
+
+"Where could my band get booked?" - using relationship graph to suggest realistic venues.
+
+---
+
+### BNDY-016: Band recommendations for venues
+
+**Status:** Future
+**Priority:** P3
+**Phase:** 4
+
+"Which bands should we book?" - using relationship graph to suggest artists.
+
+---
+
+### BNDY-017: Local scene pages
+
+**Status:** Future
+**Priority:** P3
+**Phase:** 4
+
+Curated pages for specific scenes (e.g., "Bristol jazz", "Leeds punk").
+
+---
+
+### BNDY-018: Natural language search
+
+**Status:** Future
+**Priority:** P3
+**Phase:** 4
+
+"Find me a proper indie gig near Stockport this Saturday" - semantic search over the graph.
 
 ---
 
@@ -104,3 +256,4 @@ Verified venues/promoters can submit events to bndy.
 
 - [[now]] - Current sprint
 - [[later]] - Future ideas
+- [[01-strategy/ai-native-reframe|AI-Native Reframe]]
