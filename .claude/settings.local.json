@@ -10,7 +10,8 @@
       "Bash(git push:*)",
       "Bash(git pull:*)",
       "mcp__plugin_claude-mem_mcp-search__search",
-      "Bash(aws dynamodb describe-table:*)"
+      "Bash(aws dynamodb describe-table:*)",
+      "WebFetch(domain:scenicmind.co.uk)"
     ]
   }
 }

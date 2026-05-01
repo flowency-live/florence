@@ -28,6 +28,7 @@ The central navigation hub for the bndy knowledge base.
 - [[04-architecture/aws-stack|AWS Stack]]
 - [[04-architecture/data-model|Data Model]]
 - [[04-architecture/ingestion-pipeline|Ingestion Pipeline]]
+- [[04-architecture/multi-modal-extraction|Multi-Modal Extraction]] - How bndy reads posters and images
 
 ## Entities
 
