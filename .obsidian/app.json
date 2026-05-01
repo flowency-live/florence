@@ -1,0 +1,10 @@
+{
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "current",
+  "newLinkFormat": "relative",
+  "useMarkdownLinks": false,
+  "showUnsupportedFiles": false,
+  "promptDelete": true,
+  "strictLineBreaks": false,
+  "defaultViewMode": "source"
+}

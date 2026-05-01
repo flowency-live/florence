@@ -1,0 +1,28 @@
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/
+.obsidian/core-plugins-migration.json
+.obsidian/community-plugins.json
+.obsidian/hotkeys.json
+.obsidian/graph.json
+.obsidian/bookmarks.json
+
+# Keep these Obsidian files (they define vault behavior)
+# .obsidian/app.json
+# .obsidian/appearance.json
+# .obsidian/templates.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak
