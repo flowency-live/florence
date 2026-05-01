@@ -10,7 +10,7 @@ See [[build-plan]] for full technical breakdown.
 
 ## BUILD-001: Signal Inbox
 
-**Status:** Ready
+**Status:** ✅ DEPLOYED
 **Priority:** P0
 **Build Phase:** 1
 
@@ -29,26 +29,33 @@ Raw source capture into S3/DynamoDB.
 ### Acceptance Criteria
 
 - [ ] `/intelligence/inbox` page with drop zone
-- [ ] S3 bucket for raw files
-- [ ] DynamoDB Signal table
-- [ ] POST /signals Lambda
-- [ ] Signal status: `received`
-- [ ] Any supported content type stored
+- [x] S3 bucket for raw files (`bndy-signals-dev-771551874768`)
+- [x] DynamoDB Signal table (`bndy-signals-dev`)
+- [x] POST /signals Lambda (`bndy-signals-intake-dev`)
+- [x] Signal status: `received`
+- [x] Any supported content type stored
 
 ### Technical
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | React (bndy-backstage) |
-| API | API Gateway |
-| Lambda | `signal-intake` |
-| Storage | S3 + DynamoDB |
+| Component | Technology | Status |
+|-----------|------------|--------|
+| Frontend | React (bndy-frontstage) | ❌ Not started |
+| API | API Gateway | ✅ Deployed |
+| Lambda | `signal-intake` | ✅ Deployed |
+| Storage | S3 + DynamoDB | ✅ Deployed |
+
+### API
+
+```
+POST https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev/signals
+GET  https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev/signals/{signalId}
+```
 
 ---
 
 ## BUILD-002: Claim Generator
 
-**Status:** Blocked by BUILD-001
+**Status:** ✅ DEPLOYED (awaiting Bedrock access propagation)
 **Priority:** P0
 **Build Phase:** 2
 
@@ -64,28 +71,52 @@ But: "What does this tell us about the live music world? What claims can you mak
 
 ### Acceptance Criteria
 
-- [ ] Lambda triggered by new Signal
-- [ ] Bedrock (Claude) interprets content
-- [ ] Claims stored in DynamoDB
-- [ ] Uncertainties flagged
-- [ ] Signal status: `needs_review`
+- [x] Lambda triggered by new Signal (Step Functions workflow)
+- [x] Bedrock (Claude Haiku 4.5) interprets content
+- [x] Claims stored in DynamoDB
+- [x] Uncertainties flagged
+- [x] Signal status: `pending_review`
+
+### Technical
+
+| Component | Status |
+|-----------|--------|
+| Step Functions workflow | ✅ `bndy-signals-workflow-dev` |
+| Deterministic extractor | ⚠️ Stub (text passthrough only) |
+| Interpretation runner | ✅ `bndy-signals-interpreter-dev` |
+| Failure handler | ✅ `bndy-signals-failure-handler-dev` |
+| Dead letter queue | ✅ `bndy-signals-failed-dev` |
+| Bedrock model | ✅ `eu.anthropic.claude-haiku-4-5` |
 
 ### Example Output
 
+Tested with: `"STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM"`
+
+```json
+{
+  "summary": "Announcement for Stingray performing at The Rigger on Thursday, May 15th at 8PM",
+  "claims": [
+    { "type": "event_exists", "subject": "Stingray Live at The Rigger", "strength": "moderate" },
+    { "type": "artist_performs", "subject": "Stingray", "object": "The Rigger", "strength": "strong" },
+    { "type": "venue_hosts", "subject": "The Rigger", "object": "Stingray Live", "strength": "strong" },
+    { "type": "event_date", "subject": "Stingray Live", "value": "2025-05-15", "strength": "weak" },
+    { "type": "event_time", "subject": "Stingray Live", "value": "20:00", "strength": "strong" }
+  ],
+  "uncertainties": ["Year not specified", "Venue location unknown", "Unclear if 8PM is doors or start"]
+}
 ```
-I think this tells us:
-- Event exists: "Stingray Live"
-- Artist performs: Stingray
-- Venue hosts: The Rigger
-- Date: 15 May 2026
-- Uncertainties: year inferred, support acts unknown
+
+### Cost Tracking
+
+```
+tokensIn: 1032, tokensOut: 689, modelCost: $0.0036, runtimeMs: 3706
 ```
 
 ---
 
 ## BUILD-003: Review Console
 
-**Status:** Blocked by BUILD-002
+**Status:** ⏳ NEXT (unblocked)
 **Priority:** P0
 **Build Phase:** 3
 
