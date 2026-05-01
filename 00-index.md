@@ -82,3 +82,4 @@ The agentic knowledge system - how bndy interprets evidence, generates claims, a
 - [[10-brain/agentic-intake-loop|Agentic Intake Loop]] - The agent's reasoning cycle
 - [[10-brain/memory-and-reasoning-model|Memory and Reasoning]] - How bndy remembers
 - [[10-brain/human-challenge-loop|Human Challenge Loop]] - How humans correct the brain
+- [[10-brain/derived-fields-and-field-corruption|Derived Fields and Field Corruption]] - Why contextual knowledge should not be collapsed into brittle fields
