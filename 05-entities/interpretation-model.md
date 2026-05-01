@@ -1,0 +1,241 @@
+# Interpretation Model
+
+## Purpose
+
+An Interpretation is a versioned understanding of what a Signal tells us about the live music world.
+
+Signals are raw evidence. Interpretations are what we make of that evidence.
+
+## Why Separate from Signal?
+
+A Signal can have multiple Interpretations over time:
+
+```
+Signal: Facebook event paste (received 1 May)
+├── Interpretation v1: "The Rigger" - uncertain match
+├── Interpretation v2: Matched to vnue_123 after venue evidence arrived
+└── Interpretation v3: Re-interpreted with improved model
+```
+
+Separating them allows:
+- Version history
+- Re-interpretation when context changes
+- Cost tracking per interpretation
+- Challenge without losing original
+
+## Core Principle
+
+```
+Signal = raw evidence (immutable)
+Interpretation = understanding (versioned)
+Claims = proposed world-state changes (derived from interpretation)
+```
+
+## TypeScript Interface
+
+```typescript
+interface Interpretation {
+  interpretationId: string;       // intp_xxxxxxxx
+  signalId: string;               // Parent signal
+  version: number;                // 1, 2, 3...
+
+  // Deterministic extraction (cheap, fast)
+  deterministicExtraction: DeterministicExtraction;
+
+  // LLM interpretation (reasoning)
+  llmInterpretation: LLMInterpretation;
+
+  // Cost tracking (REQUIRED)
+  sourceCost: SourceCost;
+
+  // Output
+  claims: Claim[];
+  uncertainties: string[];
+
+  // Lifecycle
+  status: InterpretationStatus;
+  createdAt: string;
+  supersededBy?: string;          // Later interpretation ID
+  supersededAt?: string;
+}
+
+interface DeterministicExtraction {
+  rawText?: string;               // Cleaned text from HTML/PDF
+  tables?: Table[];               // Extracted table structures
+  dates?: ExtractedDate[];        // Parsed dates
+  urls?: string[];                // Found URLs
+  ocrText?: string;               // OCR output for images
+  metadata?: {
+    title?: string;
+    source?: string;
+    extractedAt: string;
+  };
+}
+
+interface LLMInterpretation {
+  modelUsed: string;              // e.g., "claude-3-5-sonnet-20241022"
+  modelProvider: string;          // e.g., "bedrock"
+  promptVersion: string;          // e.g., "interpret-text-v1"
+  reasoning: string;              // The model's explanation
+  rawResponse?: string;           // Full model response (for debugging)
+}
+
+interface SourceCost {
+  modelCost: number;              // USD
+  tokensIn: number;
+  tokensOut: number;
+  runtimeMs: number;
+}
+
+type InterpretationStatus =
+  | 'draft'                       // Just created
+  | 'pending_review'              // Awaiting human review
+  | 'accepted'                    // Human accepted
+  | 'challenged'                  // Human challenged
+  | 'superseded';                 // Replaced by newer interpretation
+
+interface ExtractedDate {
+  raw: string;                    // "Thursday 15th May"
+  parsed: string;                 // "2026-05-15"
+  confidence: 'certain' | 'inferred';
+  inferenceReason?: string;       // "Year inferred as 2026"
+}
+
+interface Table {
+  headers?: string[];
+  rows: string[][];
+  source: 'html' | 'spreadsheet' | 'ocr';
+}
+```
+
+## ID Format
+
+```
+intp_[8-char-nanoid]
+
+Examples:
+intp_a1b2c3d4
+intp_x9y8z7w6
+```
+
+## Interpretation Lifecycle
+
+```
+Signal arrives
+↓
+Deterministic extraction runs
+(dates, tables, text, OCR - cheap)
+↓
+LLM interpretation runs
+(reasoning, claims - costs tracked)
+↓
+Interpretation v1 created
+Status: PENDING_REVIEW
+↓
+Human reviews
+├── Accept → Status: ACCEPTED
+└── Challenge → Status: CHALLENGED
+    └── May trigger re-interpretation (v2)
+↓
+Later: new evidence or model improvement
+↓
+Re-interpretation (v2)
+Previous: Status: SUPERSEDED
+```
+
+## Cost Tracking
+
+Every interpretation MUST record costs:
+
+```typescript
+sourceCost: {
+  modelCost: 0.0023,      // $0.0023 USD
+  tokensIn: 1547,
+  tokensOut: 312,
+  runtimeMs: 2340
+}
+```
+
+This enables:
+- Budget monitoring
+- Cost per signal type analysis
+- Model efficiency comparison
+- Spend alerts
+
+## Multiple Interpretations Example
+
+```
+Signal: Poster image (sgnl_abc123)
+
+Interpretation v1 (intp_001):
+  deterministicExtraction:
+    ocrText: "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY"
+  llmInterpretation:
+    modelUsed: "claude-3-5-sonnet-20241022"
+    reasoning: "Poster shows event announcement..."
+  claims:
+    - artist_performs: "Stingray"
+    - venue_hosts: "The Rigger" (uncertain - no location)
+    - event_date: "2026-05-15" (inferred year)
+  sourceCost:
+    modelCost: 0.0089
+    tokensIn: 2341
+    tokensOut: 456
+    runtimeMs: 3210
+  status: ACCEPTED
+
+--- Later: venue database updated ---
+
+Interpretation v2 (intp_002):
+  llmInterpretation:
+    reasoning: "With venue match context, The Rigger is vnue_123"
+  claims:
+    - venue_hosts: vnue_123 (high confidence)
+  status: ACCEPTED
+
+Interpretation v1 → status: SUPERSEDED, supersededBy: intp_002
+```
+
+## DynamoDB Access Patterns
+
+| Pattern | PK | SK |
+|---------|----|----|
+| Get interpretation | `INTP#intp_xxx` | `#METADATA` |
+| List by signal | `SIGNAL#sgnl_xxx` | `INTP#intp_xxx` |
+| List by status | GSI: `STATUS#pending_review` | `INTP#intp_xxx` |
+| Get claims | `INTP#intp_xxx` | `CLAIM#claim_xxx` |
+
+## Relationship to Other Entities
+
+```
+Signal (raw evidence)
+└── Interpretation v1
+    └── Claims
+└── Interpretation v2
+    └── Claims (refined)
+
+EvidencePack
+├── Signal 1 → Interpretation → Claims
+├── Signal 2 → Interpretation → Claims
+└── Corroboration across signals
+```
+
+## Re-interpretation Triggers
+
+An interpretation may be superseded when:
+
+| Trigger | Example |
+|---------|---------|
+| Human challenge | "That's not The Rigger" |
+| New venue evidence | Venue database updated |
+| New artist evidence | Artist confirmed identity |
+| Model improvement | Better prompt or model version |
+| Context change | Date passed, event confirmed |
+
+## Related
+
+- [[signal-model]] - Raw evidence input
+- [[claim-model]] - What interpretations produce
+- [[evidence-pack-model]] - Corroboration across signals
+- [[../11-runtime/cognitive-runtime|Cognitive Runtime]] - How interpretations evolve
+

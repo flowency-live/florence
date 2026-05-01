@@ -39,6 +39,8 @@ The central navigation hub for the bndy knowledge base.
 - [[05-entities/community-builder-model|Community Builder]]
 - [[05-entities/claimed-entity-model|Claimed Entity Model]] - Ownership, agents and managed profiles
 - [[05-entities/signal-model|Signal]] - Raw evidence input
+- [[05-entities/interpretation-model|Interpretation]] - Versioned understanding of signals
+- [[05-entities/evidence-pack-model|Evidence Pack]] - Corroboration across signals
 - [[05-entities/source-record-model|Source Record]] - Provenance tracking
 - [[05-entities/relationship-model|Relationship]] - Graph edges
 
@@ -87,3 +89,9 @@ The agentic knowledge system - how bndy interprets evidence, generates claims, a
 - [[10-brain/memory-and-reasoning-model|Memory and Reasoning]] - How bndy remembers
 - [[10-brain/human-challenge-loop|Human Challenge Loop]] - How humans correct the brain
 - [[10-brain/derived-fields-and-field-corruption|Derived Fields and Field Corruption]] - Why contextual knowledge should not be collapsed into brittle fields
+
+## Runtime (Cognitive Processing)
+
+How signals continuously contribute to evolving world understanding.
+
+- [[11-runtime/cognitive-runtime|Cognitive Runtime]] - Evidence → interpret → remember → evolve
