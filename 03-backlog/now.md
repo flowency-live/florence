@@ -6,6 +6,36 @@ Keep the map, but build the canonical identity and provenance layer that makes b
 
 ---
 
+## BNDY-000: Signal Intake Infrastructure
+
+**Status:** Ready
+**Priority:** P0
+**Phase:** 1
+
+### Why
+
+Evidence in. Knowledge out. Users don't create perfect records - they throw evidence into bndy. bndy works out what it is.
+
+### Outcome
+
+Universal input mechanism where anything (URL, image, text, spreadsheet) can be dropped in and processed.
+
+### Acceptance Criteria
+
+- [ ] Signal entity created (see [[05-entities/signal-model]])
+- [ ] S3 bucket for raw signals (images, PDFs, spreadsheets)
+- [ ] Signal intake Lambda (web upload, paste, API)
+- [ ] AI extraction using Bedrock (multi-modal)
+- [ ] Signal → SourceRecord pipeline
+- [ ] Intake page at `/bndy-intake`
+
+### Related
+
+- [[04-architecture/ingestion-pipeline|Ingestion Pipeline]]
+- [[02-product/intelligence-console|Intelligence Console]]
+
+---
+
 ## BNDY-001: Add provenance to every event
 
 **Status:** Ready

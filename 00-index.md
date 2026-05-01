@@ -13,6 +13,7 @@ The central navigation hub for the bndy knowledge base.
 - [[02-product/personas|Personas]]
 - [[02-product/principles|Product Principles]]
 - [[02-product/feature-catalogue|Feature Catalogue]]
+- [[02-product/intelligence-console|Intelligence Console]] - Knowledge growth observatory
 
 ## Backlog
 
@@ -33,6 +34,7 @@ The central navigation hub for the bndy knowledge base.
 - [[05-entities/artist-model|Artist]]
 - [[05-entities/event-model|Event]]
 - [[05-entities/community-builder-model|Community Builder]]
+- [[05-entities/signal-model|Signal]] - Raw evidence input
 - [[05-entities/source-record-model|Source Record]] - Provenance tracking
 - [[05-entities/relationship-model|Relationship]] - Graph edges
 

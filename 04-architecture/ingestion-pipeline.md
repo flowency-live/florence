@@ -1,207 +1,382 @@
 # Ingestion Pipeline
 
-How bndy collects event data from external sources.
+How bndy turns raw evidence into canonical intelligence.
 
-## Overview
+## Core Principle
+
+Users do not create perfect records. They throw evidence into bndy.
+
+**Evidence in. Knowledge out.**
+
+## Universal Input: Signals
+
+Every piece of information enters bndy as a **Signal**. There is no "add event" or "create venue". Just:
+
+**Drop anything here. bndy will work out what it is.**
+
+Signal types:
+- URL (venue website, Facebook event, Instagram post)
+- Image (poster, flyer, screenshot)
+- Screenshot (gig listing, social media post)
+- Text paste (Facebook copy, email forward)
+- Spreadsheet (promoter gig list, venue calendar)
+- PDF (press release, venue programme)
+- Manual note (overheard info, phone call)
+- Scraped data (automated collection)
+
+## Pipeline Overview
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                    EventBridge Scheduler                          │
-│                    (cron triggers)                                 │
-└─────────────────────────┬────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         SIGNAL INTAKE                                │
+│   Web Upload │ Paste │ Email Forward │ API │ Scrapers                │
+└─────────────────────────┬───────────────────────────────────────────┘
                           │
                           ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                     Source Scrapers                               │
-│         (Lambda per source: Facebook, Dice, Skiddle, etc.)        │
-└─────────────────────────┬────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         RAW STORAGE                                  │
+│              S3 (files) + DynamoDB (metadata)                        │
+└─────────────────────────┬───────────────────────────────────────────┘
                           │
                           ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                      Raw Data Queue                               │
-│                         (SQS)                                     │
-└─────────────────────────┬────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                       AI EXTRACTION                                  │
+│              Bedrock (Claude) - Multi-modal                          │
+│         Text │ Images │ PDFs │ Spreadsheets                          │
+└─────────────────────────┬───────────────────────────────────────────┘
                           │
                           ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                    Normalisation                                  │
-│            (Lambda: parse to canonical schema)                    │
-└─────────────────────────┬────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                     SOURCE RECORDS                                   │
+│            Extracted entities with confidence scores                 │
+└─────────────────────────┬───────────────────────────────────────────┘
                           │
                           ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                  Entity Resolution                                │
-│         (Lambda: match venue/artist to canonical ID)              │
-└─────────────────────────┬────────────────────────────────────────┘
-                          │
-                          ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                 Duplicate Detection                               │
-│            (Lambda: check for existing event)                     │
-└─────────────────────────┬────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    ENTITY RESOLUTION                                 │
+│            Match to canonical venues/artists/events                  │
+└─────────────────────────┬───────────────────────────────────────────┘
                           │
               ┌───────────┴───────────┐
               │                       │
               ▼                       ▼
-       ┌─────────────┐         ┌─────────────┐
-       │   New Event │         │  Duplicate  │
-       │   → Save    │         │  → Merge    │
-       └─────────────┘         └─────────────┘
+     ┌────────────────┐      ┌────────────────┐
+     │  High Confidence│      │ Needs Review   │
+     │  → Auto-publish │      │ → Human queue  │
+     └────────┬───────┘      └────────┬───────┘
+              │                       │
+              └───────────┬───────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   CANONICAL ENTITIES                                 │
+│                Venue │ Artist │ Event                                │
+└─────────────────────────┬───────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   RELATIONSHIP GRAPH                                 │
+│        artist_played_venue │ event_hosted_at │ similar_to            │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Pipeline Stages
+## Stage 1: Signal Intake
 
-### 1. Scheduling
+### Input Channels
 
-EventBridge Scheduler triggers scrapers on schedule:
+| Channel | Lambda | Trigger |
+|---------|--------|---------|
+| Web upload | `intake-web` | API Gateway |
+| Text paste | `intake-web` | API Gateway |
+| Email forward | `intake-email` | SES |
+| Scraper | `intake-scraper` | EventBridge Schedule |
+| API | `intake-api` | API Gateway |
 
-| Source | Frequency | Notes |
-|--------|-----------|-------|
-| High-volume (Dice, Skiddle) | Hourly | Lots of events |
-| Medium (venue websites) | Daily | Less frequent updates |
-| Social (Facebook, Instagram) | 6-hourly | API rate limits |
+### User Experience
 
-### 2. Source Scrapers
+`/bndy-intake` page:
 
-Each source has a dedicated Lambda:
+```
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│       Drop anything here                            │
+│                                                     │
+│   ┌─────────────────────────────────────────────┐   │
+│   │                                             │   │
+│   │     📎 Paste URL                            │   │
+│   │     📷 Upload image                         │   │
+│   │     📋 Paste text                           │   │
+│   │     📊 Upload spreadsheet                   │   │
+│   │     ✉️ Forward email                        │   │
+│   │     📝 Add note                             │   │
+│   │                                             │   │
+│   └─────────────────────────────────────────────┘   │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
 
+### Signal Storage
+
+**S3** - Raw files:
+```
+s3://bndy-signals/
+├── images/2026/05/01/sgnl_abc123.jpg
+├── screenshots/2026/05/01/sgnl_def456.png
+├── spreadsheets/2026/05/01/sgnl_ghi789.xlsx
+├── pdfs/2026/05/01/sgnl_jkl012.pdf
+├── html/2026/05/01/sgnl_mno345.html
+└── text/2026/05/01/sgnl_pqr678.txt
+```
+
+**DynamoDB** - Signal metadata:
 ```typescript
-interface ScraperOutput {
-  source: string;
-  rawEvents: RawEvent[];
-  errors: ScraperError[];
-  stats: {
-    fetched: number;
-    parsed: number;
-    failed: number;
-  };
+Signal {
+  signalId: "sgnl_abc123",
+  signalType: "image",
+  submittedBy: "user_xyz",
+  rawS3Key: "images/2026/05/01/sgnl_abc123.jpg",
+  processingStatus: "processing",
+  createdAt: "2026-05-01T14:30:00Z"
 }
 ```
 
-Scrapers are responsible for:
-- Fetching data from source
-- Basic parsing (extract event data)
-- Error handling and retry logic
-- Outputting to raw data queue
+## Stage 2: AI Extraction
 
-### 3. Normalisation
+### Multi-Modal Processing
 
-Transform raw event to canonical schema:
+| Input Type | Extraction Method | Model |
+|------------|-------------------|-------|
+| URL | Fetch + parse HTML | Claude |
+| Image | Vision analysis | Claude |
+| Screenshot | OCR + vision | Claude |
+| Text | Direct parse | Claude |
+| Spreadsheet | Parse rows → batch | Claude |
+| PDF | Extract + vision | Claude |
 
-```typescript
-// Input: raw event from scraper
-{
-  "title": "Jazz Night @ The Blue Note",
-  "venue_name": "Blue Note Jazz Club",
-  "date": "15/06/2025",
-  "time": "8pm",
-  "price": "£10"
-}
+### Extraction Prompt Pattern
 
-// Output: normalised event
-{
-  "name": "Jazz Night",
-  "venueName": "Blue Note Jazz Club",  // Not yet resolved
-  "startDate": "2025-06-15",
-  "startTime": "20:00",
-  "price": { "currency": "GBP", "amount": 10, "isFree": false }
-}
+```
+You are analyzing a signal submitted to bndy, a grassroots music platform.
+
+Extract any events, venues, or artists you can identify.
+
+For each entity, provide:
+- Name
+- Type (event/venue/artist)
+- Confidence (0.0-1.0)
+- Uncertain fields
+
+Signal type: {signalType}
+Content: {content}
 ```
 
-### 4. Entity Resolution
-
-Match venue/artist names to canonical IDs:
+### Extraction Output
 
 ```typescript
-interface ResolutionResult {
-  entityType: 'venue' | 'artist';
-  inputName: string;
+interface ExtractionResult {
+  signalId: string;
+  extractedEntities: ExtractedEntity[];
+  processingTime: number;
+  modelUsed: string;
+}
 
-  // Match result
-  matchedId?: string;
+interface ExtractedEntity {
+  entityType: 'event' | 'venue' | 'artist';
+  name: string;
   confidence: number;
-
-  // If no match
-  suggestedAction?: 'create' | 'review';
+  fields: Record<string, unknown>;
+  uncertainFields: string[];
 }
 ```
 
-Resolution strategies:
-1. **Exact match** - Name matches existing entity
-2. **Fuzzy match** - High similarity to existing (Levenshtein, phonetic)
-3. **Location match** - For venues, same address/coordinates
-4. **AI match** - LLM-based reasoning for ambiguous cases
+### Example Extraction
 
-Confidence thresholds:
-- `> 0.95` - Auto-link
-- `0.7 - 0.95` - Link with low confidence flag
-- `< 0.7` - Queue for human review or create new
+**Input**: Facebook event pasted text
 
-### 5. Duplicate Detection
+**Output**:
+```json
+{
+  "extractedEntities": [
+    {
+      "entityType": "event",
+      "name": "Stingray Live",
+      "confidence": 0.85,
+      "fields": {
+        "date": "2026-05-15",
+        "time": "20:00",
+        "venueName": "The Rigger",
+        "artistNames": ["Stingray"]
+      },
+      "uncertainFields": ["ticketPrice"]
+    },
+    {
+      "entityType": "venue",
+      "name": "The Rigger",
+      "confidence": 0.82,
+      "fields": {
+        "city": "Newcastle-under-Lyme"
+      },
+      "uncertainFields": ["address", "postcode"]
+    },
+    {
+      "entityType": "artist",
+      "name": "Stingray",
+      "confidence": 0.90,
+      "fields": {
+        "genre": "Rock"
+      },
+      "uncertainFields": []
+    }
+  ]
+}
+```
 
-Check if event already exists:
+## Stage 3: Source Records
+
+Each extraction creates one or more SourceRecords:
 
 ```typescript
-interface DuplicateCheck {
-  isLikelyDuplicate: boolean;
-  existingEventId?: string;
-  confidence: number;
-  reason: string;
+SourceRecord {
+  sourceId: "src_xxx",
+  signalId: "sgnl_abc123",
+  sourceType: "submission",
+  sourceName: "facebook_event",
+  extractionMethod: "ai",
+
+  extractedData: { ... },
+  confidence: 0.82,
+  uncertainFields: ["time"],
+
+  linkedEntityIds: [],  // Populated after resolution
+  processingStatus: "pending_resolution"
 }
 ```
 
-Duplicate signals:
-- Same venue + same date + similar name
-- Same source ID (re-import)
-- Overlapping artists and time
+## Stage 4: Entity Resolution
 
-If duplicate:
-- Merge source references
-- Update fields if new data is fresher
-- Don't create new event
+Match extracted entities to canonical records.
 
-### 6. Storage
+### Resolution Strategies
 
-Save to DynamoDB with:
-- Full event record
-- Source references
-- Confidence scores
-- Timestamps
+| Strategy | Confidence Boost | When Used |
+|----------|------------------|-----------|
+| Exact name match | +0.3 | Name identical |
+| Fuzzy name match | +0.15 | Levenshtein < 3 |
+| Location match | +0.2 | Same coordinates/postcode |
+| Google Place ID | +0.4 | API confirms match |
+| AI reasoning | Variable | Ambiguous cases |
 
-Emit EventBridge event for:
-- New event created
-- Event updated
-- Review required
+### Resolution Flow
 
-## Error Handling
+```
+"The Rigger"
+     │
+     ▼
+┌─────────────────────────────────────────┐
+│ Possible matches:                       │
+│                                         │
+│ 1. The Rigger, Newcastle-under-Lyme     │
+│    Confidence: 0.94                     │
+│                                         │
+│ 2. Rigger Venue, Stoke                  │
+│    Confidence: 0.63                     │
+│                                         │
+│ 3. Create new venue                     │
+│    Confidence: 0.20                     │
+└─────────────────────────────────────────┘
+```
 
-| Error Type | Response |
-|------------|----------|
-| Source unavailable | Retry with backoff, alert if persistent |
-| Parse failure | Log raw data, skip event, alert if > 10% |
-| Resolution failure | Queue for human review |
-| Storage failure | Retry, dead-letter queue |
+### Auto-Publish Thresholds
+
+| Confidence | Action |
+|------------|--------|
+| > 0.90 | Auto-publish |
+| 0.70 - 0.90 | Auto-publish with review flag |
+| 0.50 - 0.70 | Queue for human review |
+| < 0.50 | Reject or manual only |
+
+## Stage 5: Human Review Queue
+
+When confidence is below threshold:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Signal: sgnl_abc123                                          │
+│ Type: Facebook paste                                         │
+│ Submitted: 5 mins ago                                        │
+├──────────────────────────────┬──────────────────────────────┤
+│ RAW SOURCE                   │ EXTRACTED ENTITIES            │
+│                              │                               │
+│ "Stingray live at The        │ Event: Stingray Live          │
+│  Rigger, Thursday 15th       │ ├─ Date: 15 May 2026 ✓        │
+│  May. Doors 8pm.             │ ├─ Time: 20:00 ✓              │
+│  £5 on the door."            │ ├─ Price: £5 ⚠️               │
+│                              │ └─ Venue: The Rigger ?        │
+│                              │                               │
+│                              │ Venue match:                  │
+│                              │ ○ The Rigger, Newcastle (0.94)│
+│                              │ ○ Create new                  │
+│                              │                               │
+│                              │ [Confirm] [Edit] [Reject]     │
+└──────────────────────────────┴──────────────────────────────┘
+```
+
+## Stage 6: Canonical Entities
+
+Once resolved, create/update canonical records:
+
+```typescript
+CanonicalVenue {
+  venueId: "vnue_xxx",
+  name: "The Rigger",
+  address: { ... },
+  coordinates: { ... },
+
+  sourceRecords: ["src_001", "src_002", ...],
+  confidence: 0.92,
+  lastUpdated: "2026-05-01T15:00:00Z"
+}
+```
+
+## Stage 7: Relationship Graph
+
+Create relationship edges:
+
+```
+ARTIST#stingray → REL#played_at → VENUE#the-rigger
+EVENT#stingray-rigger-2026-05-15 → REL#hosted_at → VENUE#the-rigger
+EVENT#stingray-rigger-2026-05-15 → REL#features → ARTIST#stingray
+```
+
+## Automated Scrapers
+
+Scrapers are a special case of Signal intake:
+
+| Source | Frequency | Signal Type |
+|--------|-----------|-------------|
+| Venue websites | Daily | `url` |
+| Dice | Hourly | `api` |
+| Skiddle | Hourly | `api` |
+| Facebook | 6-hourly | `api` |
+| Eventbrite | Daily | `api` |
+
+Scrapers create Signals programmatically, then follow the same pipeline.
 
 ## Monitoring
 
-| Metric | Alert Threshold |
-|--------|-----------------|
-| Ingestion success rate | < 90% |
-| Source errors | > 5 per run |
-| Resolution queue depth | > 100 items |
-| Duplicate rate | > 50% (might indicate stale scraping) |
-
-## Initial Sources
-
-| Source | Type | Priority | Notes |
-|--------|------|----------|-------|
-| Dice | API | P0 | Good coverage, clean data |
-| Skiddle | API | P0 | Wide UK coverage |
-| Venue websites | Scrape | P1 | Direct source, varies by venue |
-| Facebook Events | API | P2 | Rate limited, auth required |
-| Eventbrite | API | P1 | Ticketed events |
+| Metric | Alert |
+|--------|-------|
+| Signals received | Dashboard |
+| Extraction success rate | < 85% |
+| Resolution success rate | < 80% |
+| Review queue depth | > 50 |
+| Average processing time | > 30s |
 
 ## Related
 
+- [[../05-entities/signal-model|Signal Model]]
+- [[../05-entities/source-record-model|Source Record Model]]
+- [[../02-product/intelligence-console|Intelligence Console]]
 - [[aws-stack]]
 - [[data-model]]
+
