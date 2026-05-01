@@ -57,3 +57,13 @@ The current production platform - context for v2 development.
 - [[08-v1-platform/api-routes|API Routes]] - All 125 endpoints
 - [[08-v1-platform/technical-debt|Technical Debt]] - Known issues
 - [[08-v1-platform/migration-notes|Migration Notes]] - v1 → v2 planning
+- [[08-v1-platform/v1-data-audit|v1 Data Audit]] - Data quality assessment
+
+## Migration (v1 → v2)
+
+The architectural hinge point - transforming v1 data into canonical v2 entities.
+
+- [[09-migration/v1-to-canonical-plan|Migration Strategy]] - Overall approach
+- [[09-migration/migration-execution-plan|Execution Plan]] - Real DynamoDB migration
+- [[09-migration/canonical-id-strategy|Canonical ID Strategy]] - ID generation rules
+- [[09-migration/v1-source-record-strategy|Source Record Strategy]] - Provenance for v1 data
