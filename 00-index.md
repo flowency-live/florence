@@ -17,6 +17,7 @@ The central navigation hub for the bndy knowledge base.
 
 ## Backlog
 
+- [[03-backlog/build-plan|Build Plan]] - First vertical slice roadmap
 - [[03-backlog/now|Now]] - Current sprint
 - [[03-backlog/next|Next]] - Upcoming work
 - [[03-backlog/later|Later]] - Future ideas

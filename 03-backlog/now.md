@@ -1,196 +1,237 @@
 # Now
 
-**Phase 1: Build the Intelligence Underneath**
+**First Vertical Slice: Evidence → Claims → Entities**
 
-Keep the map, but build the canonical identity and provenance layer that makes bndy defensible.
+One thin path through the entire system. Manual intake first, automation later.
+
+See [[build-plan]] for full technical breakdown.
 
 ---
 
-## BNDY-000: Signal Intake Infrastructure
+## BUILD-001: Signal Inbox
 
 **Status:** Ready
 **Priority:** P0
-**Phase:** 1
+**Build Phase:** 1
 
-### Why
+### What
 
-Evidence in. Knowledge out. Users don't create perfect records - they throw evidence into bndy. bndy works out what it is.
+Raw source capture into S3/DynamoDB.
 
-### Outcome
+### Supports
 
-Universal input mechanism where anything (URL, image, text, spreadsheet) can be dropped in and processed.
+- Paste URL
+- Paste Facebook/event text
+- Upload image/screenshot
+- Upload XLS/CSV gig list
+- Add free-text note
 
 ### Acceptance Criteria
 
-- [ ] Signal entity created (see [[05-entities/signal-model]])
-- [ ] S3 bucket for raw signals (images, PDFs, spreadsheets)
-- [ ] Signal intake Lambda (web upload, paste, API)
-- [ ] AI extraction using Bedrock (multi-modal)
-- [ ] Signal → SourceRecord pipeline
-- [ ] Intake page at `/bndy-intake`
+- [ ] `/intelligence/inbox` page with drop zone
+- [ ] S3 bucket for raw files
+- [ ] DynamoDB Signal table
+- [ ] POST /signals Lambda
+- [ ] Signal status: `received`
+- [ ] Any supported content type stored
 
-### Related
+### Technical
 
-- [[04-architecture/ingestion-pipeline|Ingestion Pipeline]]
-- [[02-product/intelligence-console|Intelligence Console]]
+| Component | Technology |
+|-----------|------------|
+| Frontend | React (bndy-backstage) |
+| API | API Gateway |
+| Lambda | `signal-intake` |
+| Storage | S3 + DynamoDB |
 
 ---
 
-## BNDY-001: Add provenance to every event
+## BUILD-002: Claim Generator
 
-**Status:** Ready
+**Status:** Blocked by BUILD-001
 **Priority:** P0
-**Phase:** 1
+**Build Phase:** 2
 
-### Why
+### What
 
-Without provenance, we're just another listing site. With provenance, we become a trust-aware intelligence system.
+AI reads signal and outputs **claims**, not fields.
 
-### Outcome
+### The Prompt
 
-Every event knows where it came from and how reliable it is.
+Not: "Extract fields: artist, venue, date"
+
+But: "What does this tell us about the live music world? What claims can you make? What are you uncertain about?"
 
 ### Acceptance Criteria
 
-- [ ] Event has sourceIds[] array
-- [ ] Event has extractionConfidence score
-- [ ] Event has verificationStatus
-- [ ] Event has provenanceSummary
-- [ ] Event has uncertaintyFlags[]
-- [ ] SourceRecord entity created (see [[05-entities/source-record-model]])
+- [ ] Lambda triggered by new Signal
+- [ ] Bedrock (Claude) interprets content
+- [ ] Claims stored in DynamoDB
+- [ ] Uncertainties flagged
+- [ ] Signal status: `needs_review`
+
+### Example Output
+
+```
+I think this tells us:
+- Event exists: "Stingray Live"
+- Artist performs: Stingray
+- Venue hosts: The Rigger
+- Date: 15 May 2026
+- Uncertainties: year inferred, support acts unknown
+```
 
 ---
 
-## BNDY-002: Create canonical venue IDs
+## BUILD-003: Review Console
 
-**Status:** Ready
+**Status:** Blocked by BUILD-002
 **Priority:** P0
-**Phase:** 1
+**Build Phase:** 3
 
-### Why
+### What
 
-Venues are the anchor entity. Canonical identity enables deduplication, trust, and relationship tracking.
+Show source left, claims right. Accept / reject / challenge.
 
-### Outcome
+### Layout
 
-Every venue has a canonical ID with aliases, sources, and confidence scoring.
+```
+┌────────────────────────┬────────────────────────────┐
+│ RAW SOURCE             │ GENERATED CLAIMS           │
+├────────────────────────┼────────────────────────────┤
+│ [Preview of signal]    │ ● Event: Stingray Live     │
+│                        │ ● Artist: Stingray (0.94)  │
+│                        │ ● Venue: The Rigger (0.91) │
+│                        │ ● Date: 15 May 2026 ⚠️     │
+│                        │                            │
+│                        │ [Accept] [Edit] [Reject]   │
+└────────────────────────┴────────────────────────────┘
+```
 
 ### Acceptance Criteria
 
-- [ ] Venue has canonical ID (vnue_xxx format)
-- [ ] Venue can have aliases (alternative names)
-- [ ] Venue can have source references
-- [ ] Venue has confidenceScore (0-1)
-- [ ] Venue has verificationStatus
-- [ ] Duplicate detection matches existing venues (4-level from v1)
-
-### Notes
-
-See [[05-entities/venue-model]] and [[08-v1-platform/data-models]] for v1 compatibility.
+- [ ] `/intelligence/review` page
+- [ ] View signal content alongside claims
+- [ ] Accept individual claims
+- [ ] Reject individual claims
+- [ ] Challenge with reason
+- [ ] Edit claim values before accepting
 
 ---
 
-## BNDY-003: Create canonical artist IDs
+## BUILD-004: Canonical Entity Drafts
 
-**Status:** Ready
+**Status:** Blocked by BUILD-003
 **Priority:** P0
-**Phase:** 1
+**Build Phase:** 4
 
-### Why
+### What
 
-Artists are the second key entity. Canonical identity enables relationship tracking and similarity.
+Accepted claims create/update draft canonical entities.
 
-### Outcome
+### Flow
 
-Every artist has a canonical ID with aliases, sources, and confidence scoring.
-
-### Acceptance Criteria
-
-- [ ] Artist has canonical ID (arts_xxx format)
-- [ ] Artist can have aliases (stage names, band variants)
-- [ ] Artist can have source references
-- [ ] Artist has confidenceScore (0-1)
-- [ ] Artist has verificationStatus
-- [ ] Duplicate detection matches existing artists
-
----
-
-## BNDY-004: Add duplicate detection workflow
-
-**Status:** Ready
-**Priority:** P0
-**Phase:** 1
-
-### Why
-
-Without deduplication, data quality degrades. Users see the same event multiple times.
-
-### Outcome
-
-System detects duplicates and queues them for merge or human review.
+```
+Accepted claim: "Artist Stingray performs"
+↓
+Check existing: arts_123 exists?
+↓
+Yes → Link claim as evidence
+No → Create draft entity
+```
 
 ### Acceptance Criteria
 
-- [ ] Venue duplicate detection (coordinates + name similarity)
-- [ ] Artist duplicate detection (name + genre overlap)
-- [ ] Event duplicate detection (venue + date + name)
-- [ ] Admin queue for uncertain duplicates
-- [ ] Merge workflow preserves best data from both records
-- [ ] Source references merged on duplicate resolution
+- [ ] Accepted claims trigger entity resolution
+- [ ] Existing entities linked (not duplicated)
+- [ ] New entities created as drafts
+- [ ] Relationships created (artist→event→venue)
+- [ ] Draft entities can be published
 
 ---
 
-## BNDY-005: Add trust/confidence scores
+## BUILD-005: Source Profiles
 
-**Status:** Ready
-**Priority:** P0
-**Phase:** 1
-
-### Why
-
-Not all data is equal. Confidence scores let AI act on probability and escalate uncertainty.
-
-### Outcome
-
-Every entity has a confidence score that reflects data quality.
-
-### Acceptance Criteria
-
-- [ ] Venue confidenceScore computed from sources + verification
-- [ ] Artist confidenceScore computed from sources + verification
-- [ ] Event confidenceScore computed from extraction + entity resolution
-- [ ] Low-confidence entities flagged for human review
-- [ ] UI shows verification badges
-
----
-
-## BNDY-006: Add source reliability reporting
-
-**Status:** Ready
+**Status:** Blocked by BUILD-004
 **Priority:** P1
-**Phase:** 1
+**Build Phase:** 5
 
-### Why
+### What
 
-Track which sources are reliable over time. Prioritise good sources, deprioritise bad ones.
+Regular URLs that generate repeat signals.
 
-### Outcome
+### Example
 
-Dashboard showing source quality metrics.
+```typescript
+{
+  sourceName: "The Rigger website",
+  sourceType: "venue_website",
+  sourceUrl: "https://therigger.co.uk/whats-on",
+  refreshSchedule: "daily",
+  owner: "vnue_123"
+}
+```
 
 ### Acceptance Criteria
 
-- [ ] Track successRate per source
-- [ ] Track correctionRate per source
-- [ ] Track duplicateRate per source
-- [ ] Admin can see source reliability dashboard
-- [ ] Low-reliability sources flagged
+- [ ] Create source profile
+- [ ] Manual "fetch now" button
+- [ ] Fetched content becomes Signal
+- [ ] Same pipeline (no special handling)
+
+---
+
+## BUILD-006: Automation
+
+**Status:** Blocked by BUILD-005
+**Priority:** P1
+**Build Phase:** 6
+
+### What
+
+Scheduled fetching from source profiles.
+
+### Acceptance Criteria
+
+- [ ] EventBridge scheduler
+- [ ] Sources fetched on schedule
+- [ ] New signals created automatically
+- [ ] Same claim pipeline
+- [ ] Error handling and retry
+
+---
+
+## Success Metric
+
+One human can:
+
+1. Drop a Facebook event paste
+2. See bndy generate claims
+3. Accept/correct claims
+4. See draft event created
+5. See event linked to venue and artist
+
+**Without writing any code.**
+
+---
+
+## Not Building Now
+
+| Feature | Why Later |
+|---------|-----------|
+| Graph visualisation | Nice to have, not essential |
+| Bulk import | Start manual, prove pipeline |
+| Scraper framework | Source profiles first |
+| Genre/location taxonomies | Derive from claims |
+| Neo4j | DynamoDB relationships first |
+| Migration tooling | After pipeline proven |
 
 ---
 
 ## Related
 
-- [[next]] - Phase 2-4 work
-- [[later]] - Future ideas
-- [[risks]] - Known risks
-- [[01-strategy/bndy-strategy|Strategy]] - Why we're doing this
+- [[build-plan]] - Full technical breakdown
+- [[next]] - After vertical slice
+- [[../10-brain/bndy-brain-concept|Brain Concept]] - The agentic model
+- [[../10-brain/signal-to-claim-model|Signal to Claim]] - How claims work
+
