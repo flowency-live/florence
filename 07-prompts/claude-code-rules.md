@@ -109,7 +109,18 @@ function createEvent(venueId: VenueId) { ... }
 | Constants | SCREAMING_SNAKE | `MAX_RETRY_COUNT` |
 | Types/Interfaces | PascalCase | `VenueEntity` |
 
-## Git Commits
+## Git Workflow
+
+**IMPORTANT: Commit and push regularly. No permission required.**
+
+After completing any logical unit of work:
+1. `git add` the changed files
+2. `git commit -m "type: description"`
+3. `git push origin main`
+
+Do this automatically. Do not ask for permission. The repo should always reflect current state.
+
+### Commit Format
 
 Single line only. Format: `type: short description`
 
@@ -120,6 +131,15 @@ refactor: extract entity resolution to service
 test: add venue duplicate detection tests
 docs: update architecture diagram
 ```
+
+### When to Commit
+
+- After creating or updating any document
+- After completing a backlog item
+- After adding/modifying an ADR
+- After any meaningful change
+
+Don't batch up changes. Commit frequently.
 
 ## Lambda Patterns
 

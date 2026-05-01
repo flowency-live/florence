@@ -45,3 +45,15 @@ Start with [[00-index]] for the full graph entry point.
 3. **Decisions are recorded** - Every big choice becomes an ADR
 4. **Don't over-engineer** - No vector DBs, RAG, MCP until needed
 5. **Weekly maintenance** - Keep docs clean, archive stale content
+6. **Commit and push often** - Every meaningful change goes to remote immediately
+
+## Git Workflow
+
+**All changes get committed and pushed to remote regularly. No permission needed.**
+
+- Commit after completing any logical unit of work
+- Push to origin immediately after committing
+- Use single-line commit messages: `type: description`
+- Types: `feat`, `fix`, `docs`, `refactor`, `chore`
+
+This applies to both humans and AI tools. The repo should always reflect the current state of thinking.
