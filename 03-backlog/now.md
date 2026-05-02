@@ -39,7 +39,7 @@ Raw source capture into S3/DynamoDB.
 
 | Component | Technology | Status |
 |-----------|------------|--------|
-| Frontend | React (bndy-frontstage) | ❌ Not started |
+| Frontend | React (bndy-frontstage) | ✅ /dropzone deployed |
 | API | API Gateway | ✅ Deployed |
 | Lambda | `signal-intake` | ✅ Deployed |
 | Storage | S3 + DynamoDB | ✅ Deployed |
@@ -116,7 +116,7 @@ tokensIn: 1032, tokensOut: 689, modelCost: $0.0036, runtimeMs: 3706
 
 ## BUILD-003: Review Console
 
-**Status:** ⏳ NEXT (unblocked)
+**Status:** 🔄 IN PROGRESS (dropzone UI live, review actions pending)
 **Priority:** P0
 **Build Phase:** 3
 
