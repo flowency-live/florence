@@ -51,6 +51,7 @@ interface Interpretation {
   // Output
   claims: Claim[];
   uncertainties: string[];
+  invalidClaimCount?: number;     // Count of invalid claims filtered during generation
 
   // Lifecycle
   status: InterpretationStatus;
@@ -65,11 +66,18 @@ interface DeterministicExtraction {
   dates?: ExtractedDate[];        // Parsed dates
   urls?: string[];                // Found URLs
   ocrText?: string;               // OCR output for images
+  errors?: ExtractionError[];     // Errors during extraction (e.g., OCR failed)
   metadata?: {
     title?: string;
     source?: string;
     extractedAt: string;
   };
+}
+
+interface ExtractionError {
+  code: string;                   // e.g., "OCR_FAILED"
+  message: string;                // Human-readable error
+  source?: string;                // Component that failed (e.g., "textract")
 }
 
 interface LLMInterpretation {
@@ -97,7 +105,8 @@ type InterpretationStatus =
   | 'pending_review'              // Awaiting human review
   | 'accepted'                    // Human accepted
   | 'challenged'                  // Human challenged
-  | 'superseded';                 // Replaced by newer interpretation
+  | 'superseded'                  // Replaced by newer interpretation
+  | 'parse_failed';               // LLM output could not be parsed
 
 interface ExtractedDate {
   raw: string;                    // "Thursday 15th May"
@@ -242,6 +251,33 @@ EvidencePack
 ├── Signal 2 → Interpretation → Claims
 └── Corroboration across signals
 ```
+
+## Error Handling
+
+### Extraction Failures
+
+If deterministic extraction fails (e.g., OCR error, empty image):
+- Signal status set to `failed` with `failedStep: 'extraction'`
+- Error recorded in DLQ for investigation
+- No interpretation is attempted
+
+### Parse Failures
+
+If the LLM response cannot be parsed as structured JSON:
+- Interpretation created with `status: 'parse_failed'`
+- `rawResponse` preserved for debugging
+- Signal status set to `interpretation_failed`
+- Error thrown to trigger Step Functions failure handling
+
+### Invalid Claims
+
+If the LLM generates claims missing required fields (no object and no value):
+- Claims are filtered but counted in `invalidClaimCount`
+- Warning logged for debugging
+- Noted in `uncertainties` array
+- Valid claims proceed normally
+
+This ensures failures are explicit, not silent.
 
 ## Re-interpretation Triggers
 
