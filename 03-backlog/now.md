@@ -272,6 +272,7 @@ One human can:
 ## Related
 
 - [[build-plan]] - Full technical breakdown
+- [[parallel-workstreams]] - Running multiple build streams
 - [[next]] - After vertical slice
 - [[../10-brain/bndy-brain-concept|Brain Concept]] - The agentic model
 - [[../10-brain/signal-to-claim-model|Signal to Claim]] - How claims work
