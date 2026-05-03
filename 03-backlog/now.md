@@ -282,6 +282,7 @@ One human can:
 
 ## Related
 
+- [[next-5-phases]] - Next 5 implementation phases (Phase A-E)
 - [[build-plan]] - Full technical breakdown
 - [[parallel-workstreams]] - Running multiple build streams
 - [[next]] - After vertical slice
