@@ -39,9 +39,10 @@ Raw source capture into S3/DynamoDB.
 
 | Component | Technology | Status |
 |-----------|------------|--------|
-| Frontend | React (bndy-frontstage) | ✅ /dropzone deployed |
+| Frontend | React (bndy-frontstage) | ✅ /dropzone with image upload |
 | API | API Gateway | ✅ Deployed |
-| Lambda | `signal-intake` | ✅ Deployed |
+| Lambda | `signal-intake` | ✅ Supports text + image |
+| Lambda | `deterministic-extractor` | ✅ Textract OCR for images |
 | Storage | S3 + DynamoDB | ✅ Deployed |
 
 ### API
