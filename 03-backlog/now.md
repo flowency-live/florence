@@ -40,6 +40,7 @@ Raw source capture into S3/DynamoDB.
 | Component | Technology | Status |
 |-----------|------------|--------|
 | Frontend | React (bndy-frontstage) | ✅ /dropzone with drag-drop, clipboard paste, text |
+| Frontend | React (bndy-frontstage) | ✅ /chat conversational gig submission |
 | API | API Gateway | ✅ Deployed |
 | Lambda | `signal-intake` | ✅ Supports text + image |
 | Lambda | `deterministic-extractor` | ✅ Textract OCR for images |
