@@ -81,7 +81,36 @@ Claims remain internal evidence
 1. **EntityCandidate** - Proposed entity match with confidence
 2. **RatificationSession** - Tracks conversation state for entity confirmation
 3. **ExternalRef** - Links to Google/Facebook/ticketing with provenance
-4. **Remove event draft workaround** - Events must be schema-valid or not created
+4. **Event verificationStatus** - Track trust level separate from existence
+
+### Event Creation Clarification
+
+Events CAN be created from a single signal. What changes is the verification level, not whether the event can exist.
+
+```text
+Evidence creates possibility.
+Trust determines confidence.
+Corroboration strengthens certainty over time.
+```
+
+**Trusted submitter** (verified venue, claimed artist, known promoter):
+```
+submit signal → interpretation → event created immediately
+verificationStatus: 'submitter_verified' | 'venue_confirmed' | 'artist_confirmed'
+```
+
+**Unknown/low-trust submitter** (anonymous, scraped content):
+```
+submit signal → interpretation → proposed/draft event
+verificationStatus: 'unverified' | 'community_verified' | 'source_correlated'
+```
+
+This is critical for grassroots live music. Many legitimate gigs:
+- are not on Google
+- are not on ticketing sites
+- may only exist as a poster, Instagram story, or chat message from the organiser
+
+BNDY should not require external corroboration before allowing those events to exist in the graph. That is part of the moat.
 
 ## Consequences
 
