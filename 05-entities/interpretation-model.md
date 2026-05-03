@@ -52,6 +52,7 @@ interface Interpretation {
   claims: Claim[];
   uncertainties: string[];
   invalidClaimCount?: number;     // Count of invalid claims filtered during generation
+  parseError?: string;            // Error message if LLM output parsing failed
 
   // Lifecycle
   status: InterpretationStatus;
@@ -74,6 +75,7 @@ interface DeterministicExtraction {
   };
 }
 
+// Reserved for future partial extraction support (not currently used - extraction failures throw)
 interface ExtractionError {
   code: string;                   // e.g., "OCR_FAILED"
   message: string;                // Human-readable error
@@ -265,8 +267,8 @@ If deterministic extraction fails (e.g., OCR error, empty image):
 
 If the LLM response cannot be parsed as structured JSON:
 - Interpretation created with `status: 'parse_failed'`
-- `rawResponse` preserved for debugging
-- Signal status set to `interpretation_failed`
+- `rawResponse` and `parseError` preserved for debugging
+- Signal status set to `failed` with `failedStep: 'interpretation'`
 - Error thrown to trigger Step Functions failure handling
 
 ### Invalid Claims
