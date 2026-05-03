@@ -106,6 +106,13 @@ const ALLOWED_ORIGINS = [
 - **Coordinate Jitter**: Golden-angle spiral prevents pin overlap
 - **Geospatial Indexing**: geohash4/geohash6 for clustering
 
+### Gig Submission
+
+- **/dropzone**: Paste text or drag-and-drop gig posters for AI interpretation
+- **/chat**: Conversational interface for guided gig submission via AI chat
+
+Both routes use the signals API to create claims about events, venues, and artists.
+
 ## Backstage Architecture
 
 ### Technology Stack

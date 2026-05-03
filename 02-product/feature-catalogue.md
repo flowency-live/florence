@@ -20,7 +20,9 @@ A comprehensive list of bndy features, organised by persona and priority.
 
 | Feature | Description | Priority | Status |
 |---------|-------------|----------|--------|
-| Event submission | Submit events for your venue/promotion | P0 | Planned |
+| Event submission | Submit events for your venue/promotion | P0 | Done |
+| Chat submission | Conversational AI interface for gig submission (/chat) | P0 | Done |
+| Signal dropzone | Paste text or upload posters to submit events (/dropzone) | P0 | Done |
 | Venue claim | Claim and manage your venue profile | P0 | Planned |
 | Analytics dashboard | See who's discovering your events | P2 | Planned |
 | Artist booking | Find and contact artists | P2 | Planned |
