@@ -12,7 +12,7 @@ Allow users to submit signals, not structured data. AI extracts, humans confirm.
 
 ### BNDY-007: Poster/image upload
 
-**Status:** Ready
+**Status:** ✅ DONE (in BUILD-001)
 **Priority:** P1
 **Phase:** 2
 
@@ -26,16 +26,16 @@ Users can upload an image and bndy extracts event data.
 
 ### Acceptance Criteria
 
-- [ ] User can upload image (poster, flyer, screenshot)
-- [ ] Image stored in S3
-- [ ] SourceRecord created with rawImageS3Key
-- [ ] Triggers extraction pipeline
+- [x] User can upload image (poster, flyer, screenshot) via /dropzone
+- [x] Image stored in S3 as base64
+- [x] Signal created with signalType: 'image'
+- [x] Triggers Step Functions workflow
 
 ---
 
 ### BNDY-008: AI extraction into candidate format
 
-**Status:** Ready
+**Status:** ✅ DONE (in BUILD-002)
 **Priority:** P1
 **Phase:** 2
 
@@ -45,16 +45,15 @@ This is the shift from CRUD to signal processing. AI does the heavy lifting.
 
 ### Outcome
 
-AI extracts structured event data from text/images.
+AI extracts structured claims from text/images.
 
 ### Acceptance Criteria
 
-- [ ] OCR extracts text from images
-- [ ] LLM extracts: event name, venue, date, time, artists
-- [ ] LLM identifies candidate venue (match to canonical or suggest new)
-- [ ] LLM identifies candidate artists (match to canonical or suggest new)
-- [ ] Confidence scores assigned to each field
-- [ ] Candidate event JSON created
+- [x] OCR extracts text from images (Textract)
+- [x] LLM generates claims: event, artist, venue, date, time
+- [x] Strength scores (weak/moderate/strong) with reasoning
+- [x] Uncertainties explicitly flagged
+- [x] Claims stored in DynamoDB for review
 
 ---
 

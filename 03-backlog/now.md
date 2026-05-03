@@ -56,7 +56,7 @@ GET  https://9tq7w39hb2.execute-api.eu-west-2.amazonaws.com/dev/signals/{signalI
 
 ## BUILD-002: Claim Generator
 
-**Status:** ✅ DEPLOYED (awaiting Bedrock access propagation)
+**Status:** ✅ DEPLOYED
 **Priority:** P0
 **Build Phase:** 2
 
@@ -83,11 +83,11 @@ But: "What does this tell us about the live music world? What claims can you mak
 | Component | Status |
 |-----------|--------|
 | Step Functions workflow | ✅ `bndy-signals-workflow-dev` |
-| Deterministic extractor | ⚠️ Stub (text passthrough only) |
+| Deterministic extractor | ✅ Textract OCR for images |
 | Interpretation runner | ✅ `bndy-signals-interpreter-dev` |
 | Failure handler | ✅ `bndy-signals-failure-handler-dev` |
 | Dead letter queue | ✅ `bndy-signals-failed-dev` |
-| Bedrock model | ✅ `eu.anthropic.claude-haiku-4-5` |
+| Bedrock model | ✅ `eu.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
 ### Example Output
 
@@ -117,7 +117,7 @@ tokensIn: 1032, tokensOut: 689, modelCost: $0.0036, runtimeMs: 3706
 
 ## BUILD-003: Review Console
 
-**Status:** 🔄 IN PROGRESS (API ready, UI pending)
+**Status:** ✅ DEPLOYED (in /dropzone)
 **Priority:** P0
 **Build Phase:** 3
 
@@ -150,18 +150,17 @@ Body: { action: "accept" | "reject" | "challenge", reason?: string, editedObject
 ### Acceptance Criteria
 
 - [x] Review endpoint deployed (`bndy-signals-claim-review-dev`)
-- [ ] `/intelligence/review` page
-- [ ] View signal content alongside claims
-- [ ] Accept individual claims
-- [ ] Reject individual claims
-- [ ] Challenge with reason
-- [ ] Edit claim values before accepting
+- [x] Accept individual claims (in /dropzone UI)
+- [x] Reject individual claims
+- [x] Challenge with reason
+- [x] Claim status updates in UI
+- [ ] Edit claim values before accepting (API supports, UI pending)
 
 ---
 
 ## BUILD-004: Canonical Entity Drafts
 
-**Status:** Blocked by BUILD-003
+**Status:** ⏳ NEXT (unblocked)
 **Priority:** P0
 **Build Phase:** 4
 
