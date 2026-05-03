@@ -116,7 +116,7 @@ tokensIn: 1032, tokensOut: 689, modelCost: $0.0036, runtimeMs: 3706
 
 ## BUILD-003: Review Console
 
-**Status:** 🔄 IN PROGRESS (dropzone UI live, review actions pending)
+**Status:** 🔄 IN PROGRESS (API ready, UI pending)
 **Priority:** P0
 **Build Phase:** 3
 
@@ -139,8 +139,16 @@ Show source left, claims right. Accept / reject / challenge.
 └────────────────────────┴────────────────────────────┘
 ```
 
+### API
+
+```
+POST /signals/{signalId}/claims/{claimId}/review
+Body: { action: "accept" | "reject" | "challenge", reason?: string, editedObject?: string, editedValue?: string }
+```
+
 ### Acceptance Criteria
 
+- [x] Review endpoint deployed (`bndy-signals-claim-review-dev`)
 - [ ] `/intelligence/review` page
 - [ ] View signal content alongside claims
 - [ ] Accept individual claims
