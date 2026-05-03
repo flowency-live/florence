@@ -39,7 +39,7 @@ Raw source capture into S3/DynamoDB.
 
 | Component | Technology | Status |
 |-----------|------------|--------|
-| Frontend | React (bndy-frontstage) | ✅ /dropzone with image upload |
+| Frontend | React (bndy-frontstage) | ✅ /dropzone with drag-drop, clipboard paste, text |
 | API | API Gateway | ✅ Deployed |
 | Lambda | `signal-intake` | ✅ Supports text + image |
 | Lambda | `deterministic-extractor` | ✅ Textract OCR for images |
@@ -98,14 +98,16 @@ Tested with: `"STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY 8PM"`
   "summary": "Announcement for Stingray performing at The Rigger on Thursday, May 15th at 8PM",
   "claims": [
     { "type": "event_exists", "subject": "Stingray Live at The Rigger", "strength": "moderate" },
-    { "type": "artist_performs", "subject": "Stingray", "object": "The Rigger", "strength": "strong" },
-    { "type": "venue_hosts", "subject": "The Rigger", "object": "Stingray Live", "strength": "strong" },
-    { "type": "event_date", "subject": "Stingray Live", "value": "2025-05-15", "strength": "weak" },
-    { "type": "event_time", "subject": "Stingray Live", "value": "20:00", "strength": "strong" }
+    { "type": "artist_performs", "subject": "Stingray", "object": "The Rigger", "strength": "moderate" },
+    { "type": "venue_hosts", "subject": "The Rigger", "object": "Stingray Live", "strength": "moderate" },
+    { "type": "event_date", "subject": "Stingray Live", "value": "2026-05-15", "strength": "weak" },
+    { "type": "event_time", "subject": "Stingray Live", "value": "20:00", "strength": "moderate" }
   ],
-  "uncertainties": ["Year not specified", "Venue location unknown", "Unclear if 8PM is doors or start"]
+  "uncertainties": ["Year not specified - inferred from current date", "Venue location unknown"]
 }
 ```
+
+**Note:** Times are always event start times (no "doors" concept for grassroots venues).
 
 ### Cost Tracking
 
