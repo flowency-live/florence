@@ -73,11 +73,16 @@ interface DeterministicExtraction {
 }
 
 interface LLMInterpretation {
-  modelUsed: string;              // e.g., "claude-3-5-sonnet-20241022"
+  modelUsed: string;              // e.g., "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
   modelProvider: string;          // e.g., "bedrock"
-  promptVersion: string;          // e.g., "interpret-text-v1"
+  promptVersion: string;          // e.g., "interpret-v2"
   reasoning: string;              // The model's explanation
   rawResponse?: string;           // Full model response (for debugging)
+}
+
+interface InterpretationContext {
+  currentDate: string;            // YYYY-MM-DD - runtime date for relative date inference
+  // Future: location context, user preferences, etc.
 }
 
 interface SourceCost {
@@ -117,6 +122,24 @@ Examples:
 intp_a1b2c3d4
 intp_x9y8z7w6
 ```
+
+## Runtime Context
+
+The LLM receives **interpretation context** to ground its reasoning:
+
+```
+<context>
+Current date: 2026-05-02
+When inferring dates, assume events are in the future relative to the current date.
+</context>
+```
+
+This prevents the model from defaulting to its training data's assumptions about dates. Without runtime context, "Thursday 15th May" might be interpreted as 2024 instead of 2026.
+
+Future context may include:
+- Geographic location hints
+- Known venue/artist databases for matching
+- User preferences
 
 ## Interpretation Lifecycle
 
@@ -171,17 +194,17 @@ Interpretation v1 (intp_001):
   deterministicExtraction:
     ocrText: "STINGRAY LIVE AT THE RIGGER THURSDAY 15TH MAY"
   llmInterpretation:
-    modelUsed: "claude-3-5-sonnet-20241022"
+    modelUsed: "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
     reasoning: "Poster shows event announcement..."
   claims:
     - artist_performs: "Stingray"
     - venue_hosts: "The Rigger" (uncertain - no location)
-    - event_date: "2026-05-15" (inferred year)
+    - event_date: "2026-05-15" (inferred from runtime date context)
   sourceCost:
-    modelCost: 0.0089
-    tokensIn: 2341
-    tokensOut: 456
-    runtimeMs: 3210
+    modelCost: 0.0036
+    tokensIn: 1032
+    tokensOut: 689
+    runtimeMs: 3700
   status: ACCEPTED
 
 --- Later: venue database updated ---
