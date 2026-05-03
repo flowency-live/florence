@@ -163,7 +163,7 @@ Body: { action: "accept" | "reject" | "challenge", reason?: string, editedObject
 
 ## BUILD-004: Canonical Entity Drafts
 
-**Status:** ⏳ NEXT (unblocked)
+**Status:** ✅ DEPLOYED
 **Priority:** P0
 **Build Phase:** 4
 
@@ -184,17 +184,27 @@ No → Create draft entity
 
 ### Acceptance Criteria
 
-- [ ] Accepted claims trigger entity resolution
-- [ ] Existing entities linked (not duplicated)
-- [ ] New entities created as drafts
+- [x] Accepted claims trigger entity resolution
+- [x] Existing entities linked (not duplicated)
+- [x] New entities created as drafts
 - [ ] Relationships created (artist→event→venue)
 - [ ] Draft entities can be published
+
+### Technical
+
+| Component | Status |
+|-----------|--------|
+| Canonical entity schemas | ✅ `canonical-entity.ts` |
+| Entity resolver | ✅ `entity-resolver/index.ts` |
+| Claim-review integration | ✅ Calls resolver on accept |
+| Fuzzy name matching | ✅ Levenshtein, threshold 0.85 |
+| Tests | ✅ 69 tests passing |
 
 ---
 
 ## BUILD-005: Source Profiles
 
-**Status:** Blocked by BUILD-004
+**Status:** ⏳ NEXT (unblocked)
 **Priority:** P1
 **Build Phase:** 5
 
