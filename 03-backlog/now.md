@@ -261,6 +261,51 @@ See [[../05-entities/event-candidate-model]] and [[next-5-phases]] for full deta
 
 ---
 
+## BUILD-004C: Evidence Packs & Clarifications (Phase B+C)
+
+**Status:** ✅ BACKEND COMPLETE
+**Priority:** P0
+**Build Phase:** 4C (Phase B + C)
+
+### What
+
+Evidence Packs as the cognitive core. Clarifications as first-class ambiguity resolution.
+
+### Phase B: Evidence Packs
+
+- [x] Evidence Pack schema with propositionKey for fuzzy matching
+- [x] Pack builder Lambda in Step Functions workflow
+- [x] sourceClaimIds linking (each candidate carries its own claims)
+- [x] Corroboration strength calculation (weak/moderate/strong)
+
+### Phase C: Clarifications
+
+- [x] ClarificationRequest schema
+- [x] Clarification generator Lambda in Step Functions workflow
+- [x] Clarification API (POST /clarifications/{clarificationId})
+- [x] Resolution removes ambiguity from candidate
+- [x] Resolution recalculates completeness
+- [x] Resolution updates evidence pack
+- [x] Tests: ambiguous candidate becomes ratifiable
+
+### API
+
+```
+POST /clarifications/{clarificationId}
+Body: { action: "resolve", selectedOptionId: string, resolvedBy: string }
+Body: { action: "dismiss", dismissedBy: string, reason?: string }
+```
+
+### Hardening (deferred)
+
+- **C.1**: Resolution only updates candidate when `selectedOption.entityId` exists. Free-text or date label resolutions mark clarification as resolved but don't update candidate fields. Acceptable for entity_match; needs work for date_confirm.
+
+### Next
+
+- [ ] C6: Frontend chat integration - surface clarifications in chat UI
+
+---
+
 ## BUILD-005: Source Profiles
 
 **Status:** ⏳ NEXT (unblocked)
