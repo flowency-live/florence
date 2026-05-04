@@ -8,12 +8,27 @@ The long-term defensible asset is not the event table. It is the **relationship 
 
 Raw event data is commoditised. Understanding how entities connect - that's the moat.
 
+## Core Principle
+
+**Relationships emerge from evidence and strengthen with corroboration.**
+
+They do not get "created on publish". They:
+1. Start as `proposed` (weak) from first evidence
+2. Strengthen with corroboration
+3. Promote to `confirmed` when strong
+
+```
+First signal: Stingray → The Rigger (weak, proposed)
+Second signal: confirms same (moderate)
+Third source: confirms again (strong → confirmed)
+```
+
 ## Schema
 
 ```typescript
-interface Relationship {
+interface ProposedRelationship {
   // Identity
-  relationshipId: string;              // UUID
+  relationshipId: string;              // rel_xxxxxxxx
 
   // Endpoints
   fromEntityType: EntityType;
@@ -22,13 +37,16 @@ interface Relationship {
   toEntityType: EntityType;
   toEntityId: string;
 
-  // Strength
-  confidence: number;                  // 0-1 how sure are we
-  strength: number;                    // 0-1 how strong is the relationship
+  // Evidence (the source of truth)
+  evidence: EvidenceLink[];            // Claims that support this
+  evidencePackIds: string[];           // Packs that propose this
 
-  // Evidence
-  sourceIds: string[];                 // SourceRecords that prove this
-  eventIds?: string[];                 // Events that demonstrate this
+  // Confidence (NOT numeric 0-1, categorical)
+  strength: Strength;                  // 'weak' | 'moderate' | 'strong'
+  strengthReasoning: string;           // Why this strength level
+
+  // Lifecycle
+  status: RelationshipStatus;
 
   // Temporality
   firstSeen: string;                   // When we first observed this
@@ -41,6 +59,22 @@ interface Relationship {
   // Timestamps
   createdAt: string;
   updatedAt: string;
+  confirmedAt?: string;                // When promoted to confirmed
+}
+
+type Strength = 'weak' | 'moderate' | 'strong';
+
+type RelationshipStatus =
+  | 'proposed'    // First evidence, not yet corroborated
+  | 'confirmed'   // Strong evidence, auto-promoted or human-confirmed
+  | 'rejected'    // Human rejected
+  | 'expired';    // Stale, no recent evidence
+
+interface EvidenceLink {
+  claimId: string;
+  claimType: string;
+  strength: Strength;
+  linkedAt: string;
 }
 
 type EntityType =
@@ -194,7 +228,50 @@ These relationships enable powerful queries:
 
 ## Building Relationships
 
-### Explicit (from events)
+### From Evidence Packs
+
+When claims corroborate, relationships are proposed:
+
+```
+EvidencePack: "Stingray plays The Rigger on 2026-05-15"
+├── artist_performs claim
+├── venue_hosts claim
+└── event_date claim
+
+↓
+
+ProposedRelationship:
+├── fromEntityId: arts_stingray
+├── toEntityId: vnue_rigger
+├── relationshipType: performed_at
+├── strength: weak (single source)
+└── status: proposed
+```
+
+### Strengthening with Corroboration
+
+```
+Second signal arrives
+↓
+Same artist + venue in claims
+↓
+Update existing relationship:
+├── occurrenceCount: 2
+├── strength: moderate
+└── evidence: [clm_001, clm_002]
+```
+
+### Auto-Promotion
+
+When strength reaches 'strong':
+```
+if (strength === 'strong') {
+  status = 'confirmed';
+  confirmedAt = now;
+}
+```
+
+### From Events (legacy)
 
 Every event creates relationships:
 - `artist_played_event`
@@ -231,8 +308,22 @@ GSI for reverse lookups:
 - Find all artists that played at venue X
 - Find all venues that book genre Y
 
+## Querying Relationships
+
+Only return relationships above threshold:
+
+```
+GET /artists/{id}/venues?minStrength=moderate
+```
+
+This prevents surfacing weak, unconfirmed relationships.
+
 ## Related
 
+- [[evidence-pack-model]] - Packs propose relationships
+- [[clarification-model]] - Ambiguity in relationships
+- [[claim-model]] - Claims are evidence for relationships
 - [[artist-model]]
 - [[venue-model]]
-- [[01-strategy/ai-native-reframe|AI-Native Reframe]]
+- [[../03-backlog/next-5-phases]] - Phase D: Proposed Relationships
+- [[../01-strategy/ai-native-reframe|AI-Native Reframe]]

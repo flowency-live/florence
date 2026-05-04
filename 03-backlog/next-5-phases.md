@@ -1,8 +1,20 @@
 # Next 5 Phases
 
-**Last updated:** 2026-05-03
+**Last updated:** 2026-05-04
 
-The vertical slice is complete. Now we expand capabilities.
+---
+
+## Critical Insight
+
+**The Brain must learn to reason before it learns to consume at scale.**
+
+Automated ingestion multiplies:
+- Ambiguity
+- Duplicates
+- Low-trust claims
+- Conflicting evidence
+
+Source Profiles and Automation are **LAST**, after the cognitive core is solid.
 
 ---
 
@@ -16,360 +28,382 @@ The vertical slice is complete. Now we expand capabilities.
 | BUILD-004 | Canonical Entity Drafts | ✅ Deployed |
 | Chat UI | Conversational submission | ✅ Deployed |
 
-**What Works:**
-- Drop/paste text or image → claims generated
-- Accept/reject/challenge claims
-- Accepted claims → draft entities (artist, venue)
-- Fuzzy name matching with normalization
-- 69 tests passing
+---
 
-**What's Missing:**
-- Events not auto-created (require aggregation)
-- Entity relationships (artist→event→venue)
-- Entity publishing workflow
-- Source profiles (automated fetching)
-- Scheduled automation
+## Phase Order
+
+| Phase | Name | Why This Order |
+|-------|------|----------------|
+| A | Event Aggregation | Complete the candidate → entity cycle |
+| B | Evidence Packs & Corroboration | The central cognitive structure |
+| C | Ambiguity Resolution | First-class ambiguity model, chat as primary interface |
+| D | Proposed Relationships | Graph emerges from evidence, not hard-written |
+| E | Source Profiles + Automation | Scale ingestion ONLY after reasoning is solid |
+
+---
+
+## Terminology
+
+| Legacy | Brain-Native |
+|--------|--------------|
+| Draft entity | Candidate entity, Proposed entity |
+| Create entity | Entity emerges from evidence |
+| Auto-create relationship | Proposed relationship strengthens with corroboration |
+| Review UI | Conversational ratification |
 
 ---
 
 ## Phase A: Event Aggregation
 
-**Goal:** Complete the claim → entity cycle by enabling event creation from aggregated claims.
+**Goal:** Candidate events emerge from grouped claims.
 
-### A1: Event Candidate Generator
+### A1: Event Candidate Schema
 
-When multiple related claims exist (event_exists + event_date + venue_hosts + artist_performs), propose an event entity.
+```typescript
+interface EventCandidate {
+  candidateId: string;           // cand_xxxxxxxx
+  candidateType: 'event';
+
+  // Aggregated from claims
+  proposedName: string;
+  proposedDate?: string;
+  proposedTime?: string;
+  proposedVenueId?: string;      // Linked entity ID
+  proposedArtistIds: string[];   // Linked entity IDs
+
+  // Evidence
+  sourceClaims: string[];
+  sourceSignals: string[];
+
+  // Confidence
+  completeness: 'partial' | 'complete';
+  ambiguities: Ambiguity[];
+
+  status: 'proposed' | 'ratified' | 'rejected' | 'merged';
+  createdAt: string;
+}
+```
+
+### A2: Claim Aggregator
+
+Groups related claims into event candidates:
 
 ```
-Claims:
+Claims from Signal sgnl_123:
 ├── event_exists: "Stingray Live"
 ├── event_date: "2026-05-15"
-├── event_time: "20:00"
-├── venue_hosts: "The Rigger" → vnue_abc123
-└── artist_performs: "Stingray" → arts_xyz789
+├── venue_hosts: "The Rigger" → vnue_abc
+└── artist_performs: "Stingray" → arts_xyz
 
 ↓
 
-Event Candidate:
-├── name: "Stingray Live"
-├── startDate: "2026-05-15"
-├── startTime: "20:00"
-├── venueId: vnue_abc123
-└── artistIds: [arts_xyz789]
+EventCandidate:
+├── proposedName: "Stingray Live"
+├── proposedDate: "2026-05-15"
+├── proposedVenueId: vnue_abc
+├── proposedArtistIds: [arts_xyz]
+├── completeness: 'complete'
+└── ambiguities: []
 ```
-
-**Files:**
-- `functions/event-aggregator/index.ts`
-- `functions/shared/entities/event-candidate.ts`
-
-**Acceptance Criteria:**
-- [ ] Related claims grouped by signal/interpretation
-- [ ] Event candidates proposed when enough data
-- [ ] Venue and artist IDs linked (not names)
-- [ ] Candidates appear in review queue
-
-### A2: Event Ratification
-
-Human confirms/rejects event candidates via chat or UI.
-
-**Acceptance Criteria:**
-- [ ] Review event candidates
-- [ ] Confirm → creates CanonicalEvent (draft)
-- [ ] Reject with reason
-- [ ] Edit before confirming (date, time, venue)
 
 ### A3: Entity Publishing
 
-Move entities from draft → published.
+Ratified candidates become canonical entities.
 
-**Acceptance Criteria:**
-- [ ] Publish individual entities
-- [ ] Bulk publish from review queue
-- [ ] Published events visible in API
-- [ ] Published entities have publishedAt timestamp
+```
+candidate → ratified → CanonicalEvent (status: 'published')
+```
+
+### Acceptance Criteria
+
+- [ ] Related claims grouped by signal/interpretation
+- [ ] Event candidates proposed when enough data
+- [ ] Venue and artist IDs linked (not names)
+- [ ] Candidates can be ratified via chat
+- [ ] Ratified candidates become published events
 
 ---
 
-## Phase B: Source Profiles
+## Phase B: Evidence Packs & Corroboration
 
-**Goal:** Enable repeated signal generation from known URLs.
+**Goal:** Evidence Packs become the central cognitive structure.
 
-### B1: Source Profile CRUD
-
-```typescript
-interface SourceProfile {
-  sourceId: string;           // src_xxxxxxxx
-  sourceName: string;         // "The Rigger Website"
-  sourceType: 'venue_website' | 'artist_website' | 'listing_site' | 'facebook_page';
-  sourceUrl: string;          // "https://therigger.co.uk/whats-on"
-  refreshSchedule: 'hourly' | 'daily' | 'weekly' | 'manual';
-  ownerId?: string;           // vnue_123 or arts_456
-  status: 'active' | 'paused' | 'failed';
-  lastFetched?: string;
-  lastSignalId?: string;
-  consecutiveFailures: number;
-  createdAt: string;
-  updatedAt: string;
-}
-```
-
-**API:**
-```
-POST /sources              → Create source profile
-GET /sources               → List sources
-GET /sources/{id}          → Get source
-PATCH /sources/{id}        → Update source
-DELETE /sources/{id}       → Delete source
-POST /sources/{id}/fetch   → Manual fetch now
-```
-
-**Acceptance Criteria:**
-- [ ] Source profile schema and Lambda
-- [ ] CRUD API endpoints
-- [ ] Link source to owner entity (venue/artist)
-
-### B2: Manual Fetch
-
-"Fetch now" button triggers signal creation from source URL.
-
-**Flow:**
-```
-Source Profile (src_rigger)
-↓
-Fetch URL content
-↓
-Create Signal (same pipeline)
-↓
-Claims generated
-↓
-Review queue
-```
-
-**Acceptance Criteria:**
-- [ ] Fetch endpoint triggers URL render
-- [ ] Content stored as signal
-- [ ] Same interpretation pipeline
-- [ ] Source profile updated (lastFetched, lastSignalId)
-
-### B3: URL Rendering
-
-Render URLs with Playwright for dynamic content.
-
-**Acceptance Criteria:**
-- [ ] Lambda or ECS task with Playwright
-- [ ] Extract visible text, DOM, screenshot
-- [ ] Handle SPAs and lazy-loaded content
-- [ ] Timeout and error handling
-
----
-
-## Phase C: Automation
-
-**Goal:** Scheduled fetching without human intervention.
-
-### C1: EventBridge Scheduler
-
-Trigger source fetches on schedule.
-
-**Acceptance Criteria:**
-- [ ] EventBridge rule per refresh schedule
-- [ ] Lambda processes due sources
-- [ ] Rate limiting (max concurrent fetches)
-- [ ] Backoff on failures
-
-### C2: Change Detection
-
-Only create signals when content changes.
-
-**Acceptance Criteria:**
-- [ ] Hash content on fetch
-- [ ] Compare to previous hash
-- [ ] Skip signal creation if unchanged
-- [ ] Track change history
-
-### C3: Failure Handling
-
-Handle fetch failures gracefully.
-
-**Acceptance Criteria:**
-- [ ] Track consecutive failures
-- [ ] Auto-pause after N failures
-- [ ] Alert on repeated failures
-- [ ] Resume mechanism
-
----
-
-## Phase D: Relationships
-
-**Goal:** Build the relationship graph from entities.
-
-### D1: Relationship Schema
-
-```typescript
-interface Relationship {
-  relationshipId: string;     // rel_xxxxxxxx
-  fromEntityId: string;
-  toEntityId: string;
-  relationshipType: 'performed_at' | 'hosted' | 'booked_for' | 'similar_to';
-  strength: 'weak' | 'moderate' | 'strong';
-  evidence: EvidenceLink[];
-  firstSeen: string;
-  lastSeen: string;
-  occurrenceCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-```
-
-**Acceptance Criteria:**
-- [ ] Relationship schema in shared/entities
-- [ ] Store in DynamoDB with GSI for queries
-- [ ] API to list relationships for entity
-
-### D2: Auto-Relationship Creation
-
-When an event is created, auto-generate relationships.
+### The Real Flow
 
 ```
-Event: evnt_123
-├── venueId: vnue_456
-└── artistIds: [arts_789, arts_abc]
-
-↓ Auto-create:
-
-arts_789 --performed_at--> vnue_456
-arts_abc --performed_at--> vnue_456
-vnue_456 --hosted--> arts_789
-vnue_456 --hosted--> arts_abc
+Signals
+→ Interpretations
+→ Claims
+→ Evidence Pack (THE COGNITIVE CORE)
+→ Candidate Entities
+→ Ratification
+→ Canonical Knowledge
 ```
 
-**Acceptance Criteria:**
-- [ ] Relationships created on event publish
-- [ ] Update existing relationships (increment occurrenceCount)
-- [ ] Track firstSeen/lastSeen
+Evidence Packs group claims that support the same world-state proposition.
 
-### D3: Relationship Queries
-
-API to query relationship data.
-
-**API:**
-```
-GET /artists/{id}/venues       → Venues this artist has played
-GET /venues/{id}/artists       → Artists this venue has hosted
-GET /artists/{id}/similar      → Similar artists (future)
-```
-
-**Acceptance Criteria:**
-- [ ] Query relationships by entity
-- [ ] Include strength and occurrence data
-- [ ] Sort by recency or frequency
-
----
-
-## Phase E: Trust & Verification
-
-**Goal:** Build trust levels for entities and claims.
-
-### E1: Evidence Packs
-
-Group claims that corroborate each other.
+### B1: Evidence Pack Schema
 
 ```typescript
 interface EvidencePack {
-  packId: string;
-  signals: string[];           // Signal IDs
-  claims: string[];            // Claim IDs
+  packId: string;                // pack_xxxxxxxx
+
+  // Contributing evidence
+  signals: string[];
+  interpretations: string[];
+  claims: string[];
+
+  // What this pack supports
+  proposition: string;           // "Stingray plays The Rigger on 2026-05-15"
+  propositionType: 'event' | 'artist_venue' | 'venue_location';
+
+  // Corroboration
   corroborationStrength: 'weak' | 'moderate' | 'strong';
-  proposedEntities: string[];  // Entity IDs
-  status: 'gathering' | 'ready' | 'applied';
+  corroborationReasoning: string;
+
+  // Outputs
+  candidateEntityIds: string[];
+  proposedRelationshipIds: string[];
+
+  // Lifecycle
+  status: 'gathering' | 'ready' | 'ratified' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
-**Acceptance Criteria:**
-- [ ] Evidence pack schema
-- [ ] Group related signals/claims
-- [ ] Calculate corroboration strength
+**Strength definitions:**
+- `weak`: Single source, no corroboration
+- `moderate`: 2 sources OR 1 trusted source
+- `strong`: 3+ independent sources agree
 
-### E2: Verification Levels
+### B2: Pack Builder
 
-Track how verified each entity is.
+When claims arrive, check if they corroborate existing packs or start new ones.
+
+### B3: Verification Promotion
+
+When pack strength increases, promote entity verification:
 
 ```
 unverified → submitter_verified → community_verified → source_correlated → owner_confirmed
 ```
 
-**Acceptance Criteria:**
-- [ ] Verification status on entities
-- [ ] Promote verification when corroborated
-- [ ] Show verification badges in UI
+### Acceptance Criteria
 
-### E3: Claim Lineage
-
-Track where claims came from and how they evolved.
-
-**Acceptance Criteria:**
-- [ ] Claim references source signal
-- [ ] Track edits and challenges
-- [ ] Show claim history in review
+- [ ] Evidence packs group corroborating claims
+- [ ] Pack strength calculated correctly
+- [ ] Verification status promotes with corroboration
+- [ ] Multiple signals strengthen confidence
 
 ---
 
-## Implementation Order
+## Phase C: Ambiguity Resolution
+
+**Goal:** Ambiguity becomes first-class. Chat becomes primary resolution interface.
+
+### C1: Clarification Request Schema
+
+```typescript
+interface ClarificationRequest {
+  clarificationId: string;       // clar_xxxxxxxx
+
+  // What needs clarifying
+  entityCandidateId?: string;
+  claimId?: string;
+  evidencePackId?: string;
+
+  // The question
+  question: string;              // "Is this The Rigger in Newcastle-under-Lyme?"
+  questionType: 'entity_match' | 'date_confirm' | 'venue_location' | 'artist_identity';
+
+  // Options if applicable
+  options?: ClarificationOption[];
+
+  // Resolution
+  status: 'open' | 'resolved' | 'dismissed';
+  resolvedBy?: string;
+  resolution?: string;
+  resolvedAt?: string;
+
+  createdAt: string;
+}
+
+interface ClarificationOption {
+  optionId: string;
+  label: string;
+  entityId?: string;
+  confidence?: number;
+}
+```
+
+### C2: Chat as Primary Interface
+
+The magic interaction:
 
 ```
-Phase A (Week 1-2)
-├── A1: Event aggregator
-├── A2: Event ratification
-└── A3: Entity publishing
+bndy:
+I found two venues called "The Rigger".
+Is this the one in Newcastle-under-Lyme?
 
-Phase B (Week 2-3)
-├── B1: Source profile CRUD
-├── B2: Manual fetch
-└── B3: URL rendering (may be complex)
+user:
+Yes.
 
-Phase C (Week 3-4)
-├── C1: EventBridge scheduler
-├── C2: Change detection
-└── C3: Failure handling
-
-Phase D (Week 4-5)
-├── D1: Relationship schema
-├── D2: Auto-relationship creation
-└── D3: Relationship queries
-
-Phase E (Week 5-6)
-├── E1: Evidence packs
-├── E2: Verification levels
-└── E3: Claim lineage
+bndy:
+Great. I linked this event and strengthened confidence in that venue match.
 ```
 
+Chat is not review. Chat is ratification.
+
+### C3: Ambiguity Surfacing
+
+When evidence pack has ambiguities, generate clarification requests:
+
+```
+EvidencePack:
+├── proposition: "Stingray plays The Rigger"
+├── ambiguities: ["Multiple venues named The Rigger"]
+└── status: 'gathering'
+
+↓
+
+ClarificationRequest:
+├── question: "Which 'The Rigger' is this?"
+├── options: [vnue_123 (Newcastle), vnue_456 (Sheffield)]
+└── status: 'open'
+```
+
+### Acceptance Criteria
+
+- [ ] Ambiguities generate clarification requests
+- [ ] Chat surfaces clarifications naturally
+- [ ] User resolution updates entities and packs
+- [ ] Resolved ambiguities strengthen confidence
+
 ---
 
-## Parallel Opportunities
+## Phase D: Proposed Relationships
 
-| Stream | Can Run With | Notes |
-|--------|--------------|-------|
-| A1-A3 (Events) | B1 (Source CRUD) | Different repos/concerns |
-| B2-B3 (Fetch) | D1 (Relationships) | Different repos |
-| C1-C3 (Automation) | D2-D3 (Auto-relationships) | After both B and D foundations |
+**Goal:** Relationships emerge from evidence and strengthen with corroboration.
 
-See [[parallel-workstreams]] for how to run multiple sessions.
+### D1: Proposed Relationship Schema
+
+```typescript
+interface ProposedRelationship {
+  relationshipId: string;        // rel_xxxxxxxx
+
+  fromEntityId: string;
+  toEntityId: string;
+  relationshipType: 'performed_at' | 'hosted' | 'similar_to';
+
+  // Evidence
+  evidence: EvidenceLink[];
+  evidencePackIds: string[];
+
+  // Confidence
+  strength: 'weak' | 'moderate' | 'strong';
+  occurrenceCount: number;
+  firstSeen: string;
+  lastSeen: string;
+
+  // Lifecycle
+  status: 'proposed' | 'confirmed' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### D2: Relationship Strengthening
+
+Relationships don't just "exist on publish". They:
+1. Start as `proposed` (weak) from first evidence
+2. Strengthen with corroboration
+3. Promote to `confirmed` when strong
+
+```
+First signal: Stingray → The Rigger (weak)
+Second signal: confirms same (moderate)
+Third source: confirms again (strong → confirmed)
+```
+
+### D3: Relationship Queries
+
+Only return relationships above threshold:
+
+```
+GET /artists/{id}/venues?minStrength=moderate
+```
+
+### Acceptance Criteria
+
+- [ ] Relationships start as proposed
+- [ ] Corroboration strengthens relationships
+- [ ] Query API respects strength thresholds
+- [ ] No hard-written weak relationships
 
 ---
 
-## Success Metrics
+## Phase E: Source Profiles + Automation
 
-After Phase E:
+**Goal:** Scale ingestion ONLY after the Brain can reason.
 
-1. User drops Facebook event
-2. Claims generated and reviewed
-3. Event created with venue and artist links
-4. Relationships auto-created
-5. Source profile added for venue website
-6. Next week: new events auto-fetched
-7. Multiple sources corroborate → higher verification
+### Why Last
 
-**The system learns and improves without code changes.**
+Source Profiles feed signals into the system at scale.
+Without solid:
+- Evidence Pack corroboration
+- Ambiguity resolution
+- Relationship strengthening
+
+...automated ingestion creates chaos, not knowledge.
+
+### E1: Source Profile CRUD
+
+```typescript
+interface SourceProfile {
+  sourceId: string;
+  sourceName: string;
+  sourceUrl: string;
+  sourceType: 'venue_website' | 'artist_website' | 'listing_site';
+  refreshSchedule: 'hourly' | 'daily' | 'weekly' | 'manual';
+  ownerId?: string;
+  status: 'active' | 'paused' | 'failed';
+  lastFetched?: string;
+  consecutiveFailures: number;
+}
+```
+
+### E2: URL Rendering (Playwright)
+
+### E3: EventBridge Scheduler
+
+### E4: Change Detection & Deduplication
+
+### Acceptance Criteria
+
+- [ ] Source profiles can be created
+- [ ] Manual fetch creates signals
+- [ ] Scheduler runs on schedule
+- [ ] Change detection prevents duplicates
+
+---
+
+## Success Metric
+
+After all phases:
+
+1. User pastes Facebook event
+2. Claims generated, grouped into evidence pack
+3. Ambiguity detected: "Which The Rigger?"
+4. Chat asks user, user confirms
+5. Event candidate ratified
+6. Relationships proposed, will strengthen later
+7. Second signal arrives, corroborates
+8. Pack strength increases, verification promotes
+9. Source profile added
+10. Future signals auto-corroborate
+
+**The Brain reasons. Then it scales.**
 
 ---
 
@@ -377,7 +411,8 @@ After Phase E:
 
 - [[now]] - Current sprint
 - [[parallel-workstreams]] - Running multiple streams
-- [[../05-entities/canonical-entity-model]] - Entity schemas
-- [[../05-entities/relationship-model]] - Relationship design
+- [[../05-entities/evidence-pack-model]] - Evidence pack schema
+- [[../05-entities/clarification-model]] - Ambiguity resolution
+- [[../05-entities/relationship-model]] - Proposed relationships
 - [[../10-brain/signal-to-claim-model]] - Claim philosophy
 

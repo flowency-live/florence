@@ -4,6 +4,20 @@
 
 An EvidencePack groups multiple Signals and their Interpretations that corroborate the same knowledge.
 
+**Evidence Packs are the central cognitive structure.**
+
+The real flow is:
+
+```
+Signals
+→ Interpretations
+→ Claims
+→ Evidence Pack (THE COGNITIVE CORE)
+→ Candidate Entities
+→ Ratification
+→ Canonical Knowledge
+```
+
 High-confidence knowledge emerges from multiple independent sources agreeing.
 
 ## Core Principle
@@ -28,7 +42,11 @@ That combination creates high-confidence knowledge.
 interface EvidencePack {
   packId: string;                 // pack_xxxxxxxx
 
-  // What this pack is about
+  // What this pack supports
+  proposition: string;            // "Stingray plays The Rigger on 2026-05-15"
+  propositionType: PropositionType;
+
+  // What this pack is about (legacy, being replaced by proposition)
   subject: PackSubject;
 
   // Contributing evidence
@@ -40,15 +58,44 @@ interface EvidencePack {
   corroborationStrength: CorroborationStrength;
   corroborationReasoning: string;
 
-  // What this evidence proposes
+  // Ambiguities requiring resolution
+  ambiguities: Ambiguity[];
+  clarificationIds: string[];     // Open clarification requests
+
+  // Output references
+  candidateEntityIds: string[];   // Candidate entities this pack supports
+  proposedRelationshipIds: string[]; // Proposed relationships
+
+  // What this evidence proposes (being replaced by candidateEntityIds)
   proposedEntities: ProposedEntities;
 
   // Lifecycle
   status: PackStatus;
   createdAt: string;
   updatedAt: string;
+  ratifiedAt?: string;            // When human confirmed
   publishedAt?: string;
 }
+
+type PropositionType =
+  | 'event'           // An event is happening
+  | 'artist_venue'    // Artist plays at venue
+  | 'venue_location'  // Venue is at location
+  | 'artist_identity' // Artist is this entity
+  | 'venue_identity'; // Venue is this entity
+
+interface Ambiguity {
+  ambiguityType: AmbiguityType;
+  description: string;            // "Multiple venues named The Rigger"
+  affectedClaimIds: string[];
+  suggestedResolution?: string;
+}
+
+type AmbiguityType =
+  | 'entity_match'    // Multiple entities could match
+  | 'date_uncertain'  // Year or date unclear
+  | 'conflicting'     // Evidence disagrees
+  | 'incomplete';     // Missing required data
 
 interface PackSubject {
   type: 'event' | 'venue' | 'artist';
@@ -302,6 +349,9 @@ Later phases add automation.
 - [[signal-model]] - Raw evidence
 - [[interpretation-model]] - Understanding of evidence
 - [[claim-model]] - Proposed world-state changes
+- [[clarification-model]] - Ambiguity resolution
+- [[relationship-model]] - Proposed relationships
+- [[../03-backlog/next-5-phases]] - Phase B: Evidence Packs
 - [[../10-brain/claim-evidence-graph|Claim-Evidence Graph]] - How claims link to evidence
 - [[../11-runtime/cognitive-runtime|Cognitive Runtime]] - How packs evolve
 
