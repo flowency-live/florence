@@ -204,7 +204,7 @@ No → Create draft entity
 
 ## BUILD-004B: Event Candidates (Phase A)
 
-**Status:** ✅ BUILT (pending deploy)
+**Status:** ✅ DEPLOYED
 **Priority:** P0
 **Build Phase:** 4B (Phase A)
 
