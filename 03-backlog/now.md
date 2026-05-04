@@ -197,14 +197,14 @@ No → Create draft entity
 | Canonical entity schemas | ✅ `canonical-entity.ts` |
 | Entity resolver | ✅ `entity-resolver/index.ts` |
 | Claim-review integration | ✅ Calls resolver on accept |
-| Fuzzy name matching | ✅ Levenshtein, threshold 0.85 |
+| Name matching | ✅ Exact match (fuzzy matching removed) |
 | Tests | ✅ 78 tests passing (canonical-entity + entity-resolver) |
 
 ---
 
 ## BUILD-004B: Event Candidates (Phase A)
 
-**Status:** ✅ DEPLOYED
+**Status:** ✅ BUILT (pending deploy)
 **Priority:** P0
 **Build Phase:** 4B (Phase A)
 

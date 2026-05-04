@@ -57,8 +57,8 @@ interface Interpretation {
   // Output - AI-native event candidates (proposed by LLM)
   eventCandidateIds?: string[];   // cand_xxxxxxxx references
 
-  // Output - Clarification requests (identified by LLM)
-  clarificationRequestIds?: string[]; // clar_xxxxxxxx references
+  // NOTE: clarificationRequestIds planned for Phase C
+  // See next-5-phases.md for clarification model design
 
   // Lifecycle
   status: InterpretationStatus;

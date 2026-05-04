@@ -29,6 +29,9 @@ interface EventCandidate {
   proposedVenueId?: string;      // Entity-resolved venue ID
   proposedArtistIds: string[];   // Entity-resolved artist IDs
 
+  // LLM reasoning - REQUIRED for explainability (Brain principle)
+  reasoning: string;
+
   // Evidence chain
   sourceClaims: ClaimReference[];
 
@@ -92,7 +95,7 @@ Code validates and persists:
     ↓
 Ratification via chat
     ↓
-Canonical event published
+Canonical event created (status: draft, eventStatus: tentative)
 ```
 
 **What LLM does:**
@@ -148,9 +151,15 @@ Prerequisites:
 
 On ratify:
 1. Update candidate status → 'ratified'
-2. Create canonical event (evnt_xxxxxxxx)
+2. Create canonical event (evnt_xxxxxxxx) with:
+   - status: 'draft' (not published - needs corroboration or review)
+   - eventStatus: 'tentative' (single source can't confirm)
+   - verificationStatus: carried from candidate
+   - evidence: from sourceClaims
 3. Link venue and artist relationships
 ```
+
+**Note:** Ratification creates a draft event, not a published one. Single-source events are tentative until corroborated (Phase B).
 
 ---
 
