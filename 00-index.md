@@ -18,6 +18,7 @@ The central navigation hub for the bndy knowledge base.
 ## Backlog
 
 - [[03-backlog/build-plan|Build Plan]] - First vertical slice roadmap
+- [[03-backlog/next-5-phases|Next 5 Phases]] - Phase A-E roadmap (Phase A complete)
 - [[03-backlog/now|Now]] - Current sprint
 - [[03-backlog/next|Next]] - Upcoming work
 - [[03-backlog/later|Later]] - Future ideas
@@ -40,7 +41,10 @@ The central navigation hub for the bndy knowledge base.
 - [[05-entities/claimed-entity-model|Claimed Entity Model]] - Ownership, agents and managed profiles
 - [[05-entities/signal-model|Signal]] - Raw evidence input
 - [[05-entities/interpretation-model|Interpretation]] - Versioned understanding of signals
+- [[05-entities/event-candidate-model|Event Candidate]] - AI-proposed events awaiting ratification
 - [[05-entities/evidence-pack-model|Evidence Pack]] - Corroboration across signals
+- [[05-entities/clarification-model|Clarification]] - Ambiguity resolution requests
+- [[05-entities/event-verification-model|Event Verification]] - Trust levels
 - [[05-entities/source-record-model|Source Record]] - Provenance tracking
 - [[05-entities/relationship-model|Relationship]] - Graph edges
 

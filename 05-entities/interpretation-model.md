@@ -48,11 +48,17 @@ interface Interpretation {
   // Cost tracking (REQUIRED)
   sourceCost: SourceCost;
 
-  // Output
+  // Output - Claims (fine-grained facts)
   claims: Claim[];
   uncertainties: string[];
   invalidClaimCount?: number;     // Count of invalid claims filtered during generation
   parseError?: string;            // Error message if LLM output parsing failed
+
+  // Output - AI-native event candidates (proposed by LLM)
+  eventCandidateIds?: string[];   // cand_xxxxxxxx references
+
+  // Output - Clarification requests (identified by LLM)
+  clarificationRequestIds?: string[]; // clar_xxxxxxxx references
 
   // Lifecycle
   status: InterpretationStatus;
@@ -160,14 +166,22 @@ Signal arrives
 Deterministic extraction runs
 (dates, tables, text, OCR - cheap)
 ↓
-LLM interpretation runs
-(reasoning, claims - costs tracked)
+LLM interpretation runs (AI-native)
+├── Claims (fine-grained facts)
+├── Event candidates (AI-proposed)
+└── Clarification questions (ambiguities)
+↓
+Code validates and persists
+├── Entity resolution (venue name → venueId)
+├── Ambiguity detection
+└── DynamoDB storage
 ↓
 Interpretation v1 created
 Status: PENDING_REVIEW
 ↓
 Human reviews
-├── Accept → Status: ACCEPTED
+├── Accept claims → Status: ACCEPTED
+├── Ratify event candidates → Published events
 └── Challenge → Status: CHALLENGED
     └── May trigger re-interpretation (v2)
 ↓
@@ -176,6 +190,15 @@ Later: new evidence or model improvement
 Re-interpretation (v2)
 Previous: Status: SUPERSEDED
 ```
+
+### AI-Native Principle
+
+The LLM proposes event candidates directly during interpretation, not deterministic code aggregating claims after the fact. This is the AI-native approach.
+
+**LLM does:** interpret, propose, reason, identify uncertainty
+**Code does:** validate, persist, resolve entities, prevent unsafe mutation
+
+See [[event-candidate-model]] for details.
 
 ## Cost Tracking
 

@@ -198,7 +198,66 @@ No → Create draft entity
 | Entity resolver | ✅ `entity-resolver/index.ts` |
 | Claim-review integration | ✅ Calls resolver on accept |
 | Fuzzy name matching | ✅ Levenshtein, threshold 0.85 |
-| Tests | ✅ 69 tests passing |
+| Tests | ✅ 78 tests passing (canonical-entity + entity-resolver) |
+
+---
+
+## BUILD-004B: Event Candidates (Phase A)
+
+**Status:** ✅ DEPLOYED
+**Priority:** P0
+**Build Phase:** 4B (Phase A)
+
+### What
+
+AI-native event candidates proposed during interpretation. The LLM directly proposes events (not deterministic aggregation of claims).
+
+### The Key Insight
+
+```
+LLM does:
+├── Interprets signal
+├── Proposes eventCandidates directly
+├── Explains uncertainty
+└── Identifies clarifications needed
+
+Code does:
+├── Validates schema
+├── Resolves entities (venue name → venueId)
+├── Persists to DynamoDB
+└── Creates clarification requests
+```
+
+### Acceptance Criteria
+
+- [x] EventCandidate schema and tests
+- [x] Interpretation-runner outputs eventCandidates
+- [x] Entity resolution for venue/artist names
+- [x] Ambiguity tracking for multiple matches
+- [x] Event Candidate API (GET, ratify, reject)
+- [x] CDK stack with new Lambda and routes
+
+### API
+
+```
+GET  /candidates              - List proposed candidates
+GET  /candidates/{candidateId} - Get candidate details
+POST /candidates/{candidateId}/ratify - Create canonical event
+POST /candidates/{candidateId}/reject - Reject with reason
+```
+
+### Technical
+
+| Component | Status |
+|-----------|--------|
+| Event candidate schema | ✅ `event-candidate.ts` |
+| Interpretation-runner update | ✅ Outputs eventCandidates |
+| Entity resolution | ✅ Links venue/artist IDs |
+| Event candidate API | ✅ `event-candidate-api/index.ts` |
+| Claim aggregator (fallback) | ✅ For low-confidence cases |
+| Tests | ✅ 151 passing |
+
+See [[../05-entities/event-candidate-model]] and [[next-5-phases]] for full details.
 
 ---
 
@@ -258,12 +317,31 @@ Scheduled fetching from source profiles.
 One human can:
 
 1. Drop a Facebook event paste
-2. See bndy generate claims
+2. See bndy generate claims AND event candidates
 3. Accept/correct claims
-4. See draft event created
-5. See event linked to venue and artist
+4. Ratify event candidates
+5. See published event linked to venue and artist
 
 **Without writing any code.**
+
+### End-to-End Flow (Phase A Complete)
+
+```
+Signal submitted (text, image, URL)
+    ↓
+Deterministic extraction (OCR, text parsing)
+    ↓
+LLM interpretation
+    ├── Claims (fine-grained facts)
+    ├── Event candidates (AI-proposed)
+    └── Clarifications (ambiguities)
+    ↓
+Entity resolution (venue/artist names → IDs)
+    ↓
+Human review (accept/reject claims, ratify candidates)
+    ↓
+Canonical event published with relationships
+```
 
 ---
 

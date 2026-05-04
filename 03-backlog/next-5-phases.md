@@ -32,13 +32,13 @@ Source Profiles and Automation are **LAST**, after the cognitive core is solid.
 
 ## Phase Order
 
-| Phase | Name | Why This Order |
-|-------|------|----------------|
-| A | Event Aggregation | Complete the candidate → entity cycle |
-| B | Evidence Packs & Corroboration | The central cognitive structure |
-| C | Ambiguity Resolution | First-class ambiguity model, chat as primary interface |
-| D | Proposed Relationships | Graph emerges from evidence, not hard-written |
-| E | Source Profiles + Automation | Scale ingestion ONLY after reasoning is solid |
+| Phase | Name | Status | Why This Order |
+|-------|------|--------|----------------|
+| A | Event Aggregation | ✅ Complete | Complete the candidate → entity cycle |
+| B | Evidence Packs & Corroboration | Next | The central cognitive structure |
+| C | Ambiguity Resolution | Planned | First-class ambiguity model, chat as primary interface |
+| D | Proposed Relationships | Planned | Graph emerges from evidence, not hard-written |
+| E | Source Profiles + Automation | Planned | Scale ingestion ONLY after reasoning is solid |
 
 ---
 
@@ -53,96 +53,100 @@ Source Profiles and Automation are **LAST**, after the cognitive core is solid.
 
 ---
 
-## Phase A: Event Aggregation
+## Phase A: Event Aggregation ✅
 
-**Goal:** Candidate events emerge from grouped claims.
+**Goal:** Candidate events emerge from signal interpretation.
+**Status:** Complete (2026-05-04)
+
+### AI-Native Approach
+
+**Critical insight:** The LLM proposes event candidates directly during interpretation (AI-native), NOT deterministic code aggregating claims after the fact (legacy ETL).
+
+```
+LLM does:
+├── Interprets signal content
+├── Proposes eventCandidates with reasoning
+├── Explains uncertainty/ambiguity
+└── Identifies clarificationQuestions
+
+Code does:
+├── Validates schema compliance
+├── Persists proposals to DynamoDB
+├── Resolves entities (venue name → venueId)
+├── Creates clarification requests
+└── Prevents unsafe mutation
+```
 
 ### A1: Event Candidate Schema
+
+See [[../05-entities/event-candidate-model]] for full schema.
 
 ```typescript
 interface EventCandidate {
   candidateId: string;           // cand_xxxxxxxx
   candidateType: 'event';
+  signalId: string;
+  interpretationId: string;
 
-  // Aggregated from claims
+  // LLM-proposed fields
   proposedName: string;
   proposedDate?: string;
   proposedTime?: string;
-  proposedVenueId?: string;      // Linked entity ID
-  proposedArtistIds: string[];   // Linked entity IDs
+  proposedVenueId?: string;      // Entity-resolved
+  proposedArtistIds: string[];   // Entity-resolved
 
-  // Evidence
-  sourceClaims: string[];
-  sourceSignals: string[];
+  // Evidence chain
+  sourceClaims: ClaimReference[];
 
-  // Confidence
+  // Completeness
   completeness: 'partial' | 'complete';
+  missingFields: string[];
   ambiguities: Ambiguity[];
 
+  // Trust level
+  verificationStatus: 'unverified' | 'submitter_verified';
+
   status: 'proposed' | 'ratified' | 'rejected' | 'merged';
-  createdAt: string;
 }
 ```
 
-### A2: Claim Aggregator
+### A2: Interpretation-Runner Updates
 
-Groups related claims into event candidates:
+The interpretation-runner now outputs:
+- `claims` - Fine-grained facts (existing)
+- `eventCandidates` - AI-proposed events (new)
+- `clarificationQuestions` - Ambiguity flags (new)
 
-```
-Claims from Signal sgnl_123:
-├── event_exists: "Stingray Live"
-├── event_date: "2026-05-15"
-├── venue_hosts: "The Rigger" → vnue_abc
-└── artist_performs: "Stingray" → arts_xyz
+Entity resolution happens during interpretation:
+- `proposedVenueName: "The Rigger"` → code finds `vnue_abc12345`
+- Multiple matches → ambiguity added to candidate
+- No match → will be created on ratification
 
-↓
-
-EventCandidate:
-├── proposedName: "Stingray Live"
-├── proposedDate: "2026-05-15"
-├── proposedVenueId: vnue_abc
-├── proposedArtistIds: [arts_xyz]
-├── completeness: 'complete'
-└── ambiguities: []
-```
-
-### A3: Entity Publishing
-
-Ratified candidates become canonical entities.
+### A3: Event Candidate API
 
 ```
-candidate → ratified → CanonicalEvent (status: 'published')
+GET  /candidates              - List proposed candidates
+GET  /candidates/{id}         - Get candidate details
+POST /candidates/{id}/ratify  - Create canonical event
+POST /candidates/{id}/reject  - Reject with reason
 ```
 
-### A4: Trusted Source Fast-Path
+Ratification creates canonical event with:
+- Venue and artist entity links
+- Evidence chain back to signal/claims
 
-A single trusted source can create an event directly:
+### A4: Claim Aggregator (Fallback)
 
-```
-Trusted source (venue owner, verified artist)
-↓
-Single signal with complete claims
-↓
-Event candidate with verificationStatus: 'submitter_verified'
-↓
-Auto-ratify OR minimal human confirmation
-↓
-Published event
-```
-
-**Key nuances:**
-- Verification level depends on source trust, not corroboration count
-- Trusted submitter → `submitter_verified`
-- Unknown submitter → `unverified` (needs corroboration)
-- Corroboration strengthens confidence over time, even for trusted sources
+Kept as fallback for low-confidence cases where LLM outputs claims but doesn't propose candidates. Deterministic grouping based on claim types.
 
 ### Acceptance Criteria
 
-- [ ] Related claims grouped by signal/interpretation
-- [ ] Event candidates proposed when enough data
-- [ ] Venue and artist IDs linked (not names)
-- [ ] Candidates can be ratified via chat
-- [ ] Ratified candidates become published events
+- [x] Event candidates proposed during interpretation (AI-native)
+- [x] Venue/artist names resolved to entity IDs
+- [x] Ambiguities tracked when multiple matches
+- [x] Candidates can be ratified via API
+- [x] Ratified candidates create canonical events
+- [x] CDK stack updated with new Lambda and routes
 
 ---
 
