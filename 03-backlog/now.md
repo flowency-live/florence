@@ -311,6 +311,8 @@ Body: { action: "dismiss", dismissedBy: string, reason?: string }
 ### Hardening (deferred)
 
 - **C.1**: Resolution only updates candidate when `selectedOption.entityId` exists. Free-text or date label resolutions mark clarification as resolved but don't update candidate fields. Acceptable for entity_match; needs work for date_confirm.
+- **C6.1**: Add assistant acknowledgement after resolution (e.g., "Thanks — I've linked this event to The Rigger in Newcastle-under-Lyme.")
+- **C6.2**: Replace hardcoded `resolvedBy: 'chat_user'` with actual authenticated user ID.
 
 ### Next
 
