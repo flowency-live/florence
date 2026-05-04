@@ -261,15 +261,15 @@ See [[../05-entities/event-candidate-model]] and [[next-5-phases]] for full deta
 
 ---
 
-## BUILD-004C: Evidence Packs & Clarifications (Phase B+C)
+## BUILD-004C: Evidence Packs & Clarifications (Phase B+C+C6)
 
-**Status:** ✅ BACKEND COMPLETE
+**Status:** ✅ COMPLETE
 **Priority:** P0
-**Build Phase:** 4C (Phase B + C)
+**Build Phase:** 4C (Phase B + C + C6)
 
 ### What
 
-Evidence Packs as the cognitive core. Clarifications as first-class ambiguity resolution.
+Evidence Packs as the cognitive core. Clarifications as first-class ambiguity resolution. Chat UI integration.
 
 ### Phase B: Evidence Packs
 
@@ -278,7 +278,7 @@ Evidence Packs as the cognitive core. Clarifications as first-class ambiguity re
 - [x] sourceClaimIds linking (each candidate carries its own claims)
 - [x] Corroboration strength calculation (weak/moderate/strong)
 
-### Phase C: Clarifications
+### Phase C: Clarifications Backend
 
 - [x] ClarificationRequest schema
 - [x] Clarification generator Lambda in Step Functions workflow
@@ -288,9 +288,21 @@ Evidence Packs as the cognitive core. Clarifications as first-class ambiguity re
 - [x] Resolution updates evidence pack
 - [x] Tests: ambiguous candidate becomes ratifiable
 
+### Phase C6: Frontend Chat Integration
+
+- [x] GET /signals/{signalId} returns clarifications array
+- [x] ClarificationRequest types in frontend
+- [x] clarificationApi client (resolve/dismiss)
+- [x] useChatSession extended with clarifications state
+- [x] ClarificationMessage component with option buttons
+- [x] Sequential presentation in ChatPage (one at a time)
+
 ### API
 
 ```
+GET /signals/{signalId}
+Response: { signal, interpretation, claims, clarifications: ClarificationRequest[] }
+
 POST /clarifications/{clarificationId}
 Body: { action: "resolve", selectedOptionId: string, resolvedBy: string }
 Body: { action: "dismiss", dismissedBy: string, reason?: string }
@@ -302,7 +314,7 @@ Body: { action: "dismiss", dismissedBy: string, reason?: string }
 
 ### Next
 
-- [ ] C6: Frontend chat integration - surface clarifications in chat UI
+- [ ] Phase D: Proposed relationships with temporal awareness
 
 ---
 
