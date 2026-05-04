@@ -46,9 +46,6 @@ interface EvidencePack {
   proposition: string;            // "Stingray plays The Rigger on 2026-05-15"
   propositionType: PropositionType;
 
-  // What this pack is about (legacy, being replaced by proposition)
-  subject: PackSubject;
-
   // Contributing evidence
   signals: SignalReference[];
   interpretations: InterpretationReference[];
@@ -66,8 +63,11 @@ interface EvidencePack {
   candidateEntityIds: string[];   // Candidate entities this pack supports
   proposedRelationshipIds: string[]; // Proposed relationships
 
-  // What this evidence proposes (being replaced by candidateEntityIds)
-  proposedEntities: ProposedEntities;
+  // @deprecated - use proposition instead
+  subject?: PackSubject;
+
+  // @deprecated - use candidateEntityIds instead
+  proposedEntities?: ProposedEntities;
 
   // Lifecycle
   status: PackStatus;

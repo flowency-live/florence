@@ -133,19 +133,19 @@ type RelationshipType =
 ### Artist ↔ Venue History
 
 ```typescript
-// Derived from events
+// Derived from corroborated evidence
 {
+  relationshipId: 'rel_abc12345',
   relationshipType: 'artist_played_venue',
-  fromEntityId: 'artist_123',
-  toEntityId: 'venue_456',
+  fromEntityId: 'arts_123',
+  toEntityId: 'vnue_456',
   occurrenceCount: 7,           // Played here 7 times
   firstSeen: '2023-01-15',
   lastSeen: '2025-04-20',
-  strength: 0.85,               // Strong relationship
-  metadata: {
-    avgCrowdSize: 'good',
-    venueRating: 4.5
-  }
+  strength: 'strong',           // Categorical, not numeric
+  strengthReasoning: '7 confirmed performances across 2 years',
+  status: 'confirmed',
+  evidence: [/* claim references */]
 }
 ```
 
@@ -154,14 +154,15 @@ type RelationshipType =
 ```typescript
 // Computed from shared venues, genres, audiences
 {
+  relationshipId: 'rel_xyz78901',
   relationshipType: 'artist_similar_to',
-  fromEntityId: 'artist_123',
-  toEntityId: 'artist_789',
-  confidence: 0.78,
+  fromEntityId: 'arts_123',
+  toEntityId: 'arts_789',
+  strength: 'moderate',         // Categorical, not numeric
+  strengthReasoning: '5 shared venues, similar genre profile',
+  status: 'proposed',           // Not yet confirmed
   metadata: {
     sharedVenues: 5,
-    genreOverlap: 0.8,
-    audienceOverlap: 0.6,
     similarityReason: 'Same venues, similar genre'
   }
 }
@@ -186,11 +187,14 @@ type RelationshipType =
 ```typescript
 // What genres does this venue book?
 {
+  relationshipId: 'rel_genre123',
   relationshipType: 'venue_books_genre',
-  fromEntityId: 'venue_456',
+  fromEntityId: 'vnue_456',
   toEntityId: 'genre_jazz',
-  strength: 0.9,
-  occurrenceCount: 45,          // 45 jazz events
+  strength: 'strong',           // 45 jazz events = strong signal
+  strengthReasoning: '45 jazz events, 60% of bookings',
+  status: 'confirmed',
+  occurrenceCount: 45,
   metadata: {
     percentageOfBookings: 0.6
   }
@@ -202,11 +206,14 @@ type RelationshipType =
 ```typescript
 // Who works with whom?
 {
+  relationshipId: 'rel_promo789',
   relationshipType: 'promoter_works_with_venue',
-  fromEntityId: 'promoter_789',
-  toEntityId: 'venue_456',
+  fromEntityId: 'prom_789',
+  toEntityId: 'vnue_456',
   occurrenceCount: 12,
-  strength: 0.8,
+  strength: 'moderate',         // 12 events = moderate
+  strengthReasoning: '12 events promoted at this venue',
+  status: 'confirmed',
   metadata: {
     avgEventSize: 'medium',
     relationship: 'regular'

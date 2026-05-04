@@ -114,6 +114,28 @@ Ratified candidates become canonical entities.
 candidate → ratified → CanonicalEvent (status: 'published')
 ```
 
+### A4: Trusted Source Fast-Path
+
+A single trusted source can create an event directly:
+
+```
+Trusted source (venue owner, verified artist)
+↓
+Single signal with complete claims
+↓
+Event candidate with verificationStatus: 'submitter_verified'
+↓
+Auto-ratify OR minimal human confirmation
+↓
+Published event
+```
+
+**Key nuances:**
+- Verification level depends on source trust, not corroboration count
+- Trusted submitter → `submitter_verified`
+- Unknown submitter → `unverified` (needs corroboration)
+- Corroboration strengthens confidence over time, even for trusted sources
+
 ### Acceptance Criteria
 
 - [ ] Related claims grouped by signal/interpretation
